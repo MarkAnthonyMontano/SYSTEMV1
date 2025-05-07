@@ -12,6 +12,8 @@ import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { jwtDecode } from "jwt-decode";
 
+const API_URL = "http://localhost:5000/person_table";
+
 const ApplicantForm = () => {
   const getPersonIdFromToken = () => {
     const token = localStorage.getItem("token");
@@ -29,18 +31,32 @@ const ApplicantForm = () => {
 
   const [personID, setPersonID] = useState('');
 
+
+
   useEffect(() => {
     fetchApplicants();
   }, []);
 
   const fetchApplicants = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/personal_information');
+      const response = await axios.get('http://localhost:5000/person_table');
       setApplicants(response.data);
     } catch (error) {
       console.error('Error fetching applicants:', error);
     }
   };
+
+  const [students, setStudents] = useState([]);
+  const [newStudent, setNewStudent] = useState({ first_name: "", last_name: "" });
+
+  // Fetch all students
+  useEffect(() => {
+    axios
+      .get(API_URL)
+      .then((res) => setStudents(res.data))
+      .catch((err) => console.error("Fetch error:", err));
+  }, []);
+
 
 
 
@@ -49,7 +65,7 @@ const ApplicantForm = () => {
       if (!personID) return;
 
       try {
-        const response = await axios.get(`http://localhost:5000/personal_information`);
+        const response = await axios.get(`http://localhost:5000/person_table`);
         const filtered = response.data.filter(item => String(item.person_id) === String(personID));
         setData(filtered);
       } catch (err) {
@@ -63,11 +79,25 @@ const ApplicantForm = () => {
 
 
   useEffect(() => {
-    fetch("http://localhost:5000/personal_information")
+    fetch("http://localhost:5000/person_table")
       .then(res => res.json())
       .then(data => setData(data))
       .catch(err => console.error(err));
   }, []);
+
+  const updateItem = (student) => {
+    axios
+      .put(`${API_URL}/${student.person_id}`, student)
+      .then((res) => {
+        setStudents((prevStudents) =>
+          prevStudents.map((s) =>
+            s.person_id === student.person_id ? res.data : s
+          )
+        );
+      })
+      .catch((err) => console.error("Update error:", err));
+  };
+
 
   const [profilePicture, setProfilePicture] = useState(null);
 
@@ -259,6 +289,40 @@ const ApplicantForm = () => {
 
 
 
+  const region1Municipalities = [
+    // Ilocos Norte
+    "Adams", "Bacarra", "Badoc", "Bangui", "Banna", "Batac City", "Burgos", "Carasi",
+    "Currimao", "Dingras", "Dumalneg", "Laoag City", "Marcos", "Nueva Era", "Pagudpud",
+    "Paoay", "Pasuquin", "Piddig", "Pinili", "San Nicolas", "Sarrat", "Solsona", "Vintar",
+
+    // Ilocos Sur
+    "Alilem", "Banayoyo", "Bantay", "Burgos", "Cabugao", "Candon City", "Caoayan", "Cervantes",
+    "Galimuyod", "Gregorio del Pilar", "Lidlidda", "Magsingal", "Nagbukel", "Narvacan",
+    "Quirino", "Salcedo", "San Emilio", "San Esteban", "San Ildefonso", "San Juan",
+    "San Vicente", "Santa", "Santa Catalina", "Santa Cruz", "Santa Lucia", "Santa Maria",
+    "Santiago", "Santo Domingo", "Sigay", "Sinait", "Sugpon", "Suyo", "Tagudin", "Vigan City",
+
+    // La Union
+    "Agoo", "Aringay", "Bacnotan", "Bagulin", "Balaoan", "Bangar", "Bauang", "Burgos",
+    "Caba", "Luna", "Naguilian", "Pugo", "Rosario", "San Fernando City", "San Gabriel",
+    "San Juan", "Santo Tomas", "Santol", "Sudipen", "Tubao",
+
+    // Pangasinan
+    "Agno", "Aguilar", "Alaminos City", "Anda", "Asingan", "Balungao", "Bani", "Basista",
+    "Bautista", "Bayambang", "Binalonan", "Binmaley", "Bolinao", "Bugallon", "Burgos",
+    "Calasiao", "Dagupan City", "Dasol", "Infanta", "Labrador", "Laoac", "Lingayen",
+    "Mabini", "Malasiqui", "Manaoag", "Mangaldan", "Mangatarem", "Mapandan", "Natividad",
+    "Pozorrubio", "Rosales", "San Carlos City", "San Fabian", "San Jacinto", "San Manuel",
+    "San Nicolas", "San Quintin", "Santa Barbara", "Santa Maria", "Santo Tomas",
+    "Sison", "Sual", "Tayug", "Umingan", "Urbiztondo", "Urdaneta City", "Villasis"
+  ];
+
+  const [selectedMunicipality, setSelectedMunicipality] = useState('');
+
+
+
+
+
   return (
 
     <Container>
@@ -346,20 +410,39 @@ const ApplicantForm = () => {
             <Typography style={{ fontSize: "13px", marginRight: "10px", minWidth: "150px" }}>
               Campus: <span style={{ color: "red" }}>*</span>
             </Typography>
-            <FormControl sx={{ width: "100%" }} size="small">
-              <InputLabel id="campus-label">Campus (Manila/Cavite)</InputLabel>
-              <Select
-                labelId="campus-label"
-                id="campus-select"
-                value={data[0]?.campus || ""}
-                label="Campus (Manila/Cavite)"
-                required
 
-              >
-                <MenuItem value="MANILA">MANILA</MenuItem>
-                <MenuItem value="CAVITE">CAVITE</MenuItem>
-              </Select>
-            </FormControl>
+            {students.map((student) => (
+              <FormControl sx={{ width: "100%" }} size="small" key={student.person_id}>
+                <InputLabel id={`campus-label-${student.person_id}`}>
+                  Campus (Manila/Cavite)
+                </InputLabel>
+                <Select
+                  labelId={`campus-label-${student.person_id}`}
+                  id={`campus-select-${student.person_id}`}
+                  value={student.campus ?? ""} // fallback if null or undefined
+                  label="Campus (Manila/Cavite)"
+                  onChange={(e) => {
+                    const updatedCampus = e.target.value;
+                    const updatedStudent = { ...student, campus: updatedCampus };
+
+                    // Update local state
+                    setStudents((prevStudents) =>
+                      prevStudents.map((s) =>
+                        s.person_id === student.person_id ? updatedStudent : s
+                      )
+                    );
+
+                    // Immediately update the backend
+                    updateItem(updatedStudent);
+                  }}
+                  required
+                >
+                  <MenuItem value={0}>MANILA</MenuItem>
+                  <MenuItem value={1}>CAVITE</MenuItem>
+                </Select>
+              </FormControl>
+            ))}
+
           </Box>
 
 
@@ -367,42 +450,78 @@ const ApplicantForm = () => {
             <Typography style={{ fontSize: "13px", marginRight: "10px", minWidth: "150px" }}>
               Academic Program: <span style={{ color: "red" }}>*</span>
             </Typography>
-            <FormControl sx={{ width: "100%" }} size="small" required>
-              <InputLabel id="academic-program-label">Select Academic Program</InputLabel>
-              <Select
-                labelId="academic-program-label"
-                id="academic-program-select"
-                value={data[0]?.academicProgram || ""}
-                label="Select Academic Program"
+            {students.map((student) => (
+              <FormControl sx={{ width: "100%" }} size="small" required key={student.person_id}>
+                <InputLabel id={`academic-program-label-${student.person_id}`}>
+                  Select Academic Program
+                </InputLabel>
+                <Select
+                  labelId={`academic-program-label-${student.person_id}`}
+                  id={`academic-program-select-${student.person_id}`}
+                  value={student.academicProgram || ""}
+                  label="Select Academic Program"
+                  onChange={(e) => {
+                    const updatedProgram = e.target.value;
+                    const updatedStudent = { ...student, academicProgram: updatedProgram };
 
-              >
-                <MenuItem value="Techvoc">Techvoc</MenuItem>
-                <MenuItem value="Undergraduate">Undergraduate</MenuItem>
-                <MenuItem value="Graduate">Graduate</MenuItem>
-              </Select>
-            </FormControl>
+                    // Update local state
+                    setStudents((prevStudents) =>
+                      prevStudents.map((s) =>
+                        s.person_id === student.person_id ? updatedStudent : s
+                      )
+                    );
+
+                    // Immediately update backend
+                    updateItem(updatedStudent);
+                  }}
+                >
+                  <MenuItem value="Techvoc">Techvoc</MenuItem>
+                  <MenuItem value="Undergraduate">Undergraduate</MenuItem>
+                  <MenuItem value="Graduate">Graduate</MenuItem>
+                </Select>
+              </FormControl>
+            ))}
+
 
           </Box>
           <Box display="flex" alignItems="center" mb={2}>
             <Typography style={{ fontSize: "13px", marginRight: "10px", minWidth: "150px" }}>
               Classified As: <span style={{ color: "red" }}>*</span>
             </Typography>
-            <FormControl sx={{ width: "100%" }} size="small" required>
-              <InputLabel id="classified-as-label">Select Classification</InputLabel>
-              <Select
-                labelId="classified-as-label"
-                id="classified-as-select"
-                value={data[0]?.classifiedAs || ""}
-                label="Select Classification"
+            {students.map((student) => (
+              <FormControl sx={{ width: "100%" }} size="small" required key={student.person_id}>
+                <InputLabel id={`classified-as-label-${student.person_id}`}>
+                  Select Classification
+                </InputLabel>
+                <Select
+                  labelId={`classified-as-label-${student.person_id}`}
+                  id={`classified-as-select-${student.person_id}`}
+                  value={student.classifiedAs || ""}
+                  label="Select Classification"
+                  onChange={(e) => {
+                    const updatedClassification = e.target.value;
+                    const updatedStudent = { ...student, classifiedAs: updatedClassification };
 
-              >
-                <MenuItem value="Freshman (First Year)">Freshman (First Year)</MenuItem>
-                <MenuItem value="Transferee">Transferee</MenuItem>
-                <MenuItem value="Returnee">Returnee</MenuItem>
-                <MenuItem value="Shiftee">Shiftee</MenuItem>
-                <MenuItem value="Foreign Student">Foreign Student</MenuItem>
-              </Select>
-            </FormControl>
+                    // Update local state
+                    setStudents((prevStudents) =>
+                      prevStudents.map((s) =>
+                        s.person_id === student.person_id ? updatedStudent : s
+                      )
+                    );
+
+                    // Immediately update backend
+                    updateItem(updatedStudent);
+                  }}
+                >
+                  <MenuItem value="Freshman (First Year)">Freshman (First Year)</MenuItem>
+                  <MenuItem value="Transferee">Transferee</MenuItem>
+                  <MenuItem value="Returnee">Returnee</MenuItem>
+                  <MenuItem value="Shiftee">Shiftee</MenuItem>
+                  <MenuItem value="Foreign Student">Foreign Student</MenuItem>
+                </Select>
+              </FormControl>
+            ))}
+
           </Box>
 
 
@@ -421,169 +540,183 @@ const ApplicantForm = () => {
                 >
                   Program: <span style={{ color: "red" }}>*</span>
                 </Typography>
-                <FormControl sx={{ width: "80%" }} size="small">
-                  <InputLabel id="program-label">Select Program</InputLabel>
-                  <Select
-                    labelId="program-label"
-                    id="program-select"
-                    value={data[0]?.program || ""}
-                    label="Select Program"
+                {students.map((student) => (
+                  <FormControl sx={{ width: "80%" }} size="small" key={student.person_id}>
+                    <InputLabel id={`program-label-${student.person_id}`}>
+                      Select Program
+                    </InputLabel>
+                    <Select
+                      labelId={`program-label-${student.person_id}`}
+                      id={`program-select-${student.person_id}`}
+                      value={student.program || ""}
+                      label="Select Program"
+                      onChange={(e) => {
+                        const updatedProgram = e.target.value;
+                        const updatedStudent = { ...student, program: updatedProgram };
 
-                  >
-                    <ListSubheader style={{ textAlign: "Center", color: "maroon" }}>
-                      COLLEGE OF ARCHITECTURE AND FINE ARTS
-                    </ListSubheader>
-                    <MenuItem value="Bachelor of Science in Architecture (BS ARCHI.)">
-                      Bachelor of Science in Architecture (BS ARCHI.)
-                    </MenuItem>
-                    <MenuItem value="Bachelor of Science in Interior Design (BSID)">
-                      Bachelor of Science in Interior Design (BSID)
-                    </MenuItem>
-                    <MenuItem value="Bachelor in Fine Arts (BFA) - Painting">
-                      Bachelor in Fine Arts (BFA) - Painting
-                    </MenuItem>
-                    <MenuItem value="Bachelor in Fine Arts (BFA) - Visual Communication">
-                      Bachelor in Fine Arts (BFA) - Visual Communication
-                    </MenuItem>
+                        // Update local state
+                        setStudents((prevStudents) =>
+                          prevStudents.map((s) =>
+                            s.person_id === student.person_id ? updatedStudent : s
+                          )
+                        );
 
-                    <ListSubheader style={{ textAlign: "Center", color: "maroon" }}>
-                      COLLEGE OF ARTS AND SCIENCES
-                    </ListSubheader>
-                    <MenuItem value="Bachelor of Science in Applied Physics w/ Comp. Sci. Emphasis (BSAP)">
-                      Bachelor of Science in Applied Physics w/ Comp. Sci. Emphasis (BSAP)
-                    </MenuItem>
-                    <MenuItem value="Bachelor of Science in Psychology (BSPSYCH)">
-                      Bachelor of Science in Psychology (BSPSYCH)
-                    </MenuItem>
-                    <MenuItem value="Bachelor of Science in Mathematics (BSMATH)">
-                      Bachelor of Science in Mathematics (BSMATH)
-                    </MenuItem>
+                        // Immediately update backend
+                        updateItem(updatedStudent);
+                      }}
+                    >
+                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
+                        COLLEGE OF ARCHITECTURE AND FINE ARTS
+                      </ListSubheader>
+                      <MenuItem value="Bachelor of Science in Architecture (BS ARCHI.)">
+                        Bachelor of Science in Architecture (BS ARCHI.)
+                      </MenuItem>
+                      <MenuItem value="Bachelor of Science in Interior Design (BSID)">
+                        Bachelor of Science in Interior Design (BSID)
+                      </MenuItem>
+                      <MenuItem value="Bachelor in Fine Arts (BFA) - Painting">
+                        Bachelor in Fine Arts (BFA) - Painting
+                      </MenuItem>
+                      <MenuItem value="Bachelor in Fine Arts (BFA) - Visual Communication">
+                        Bachelor in Fine Arts (BFA) - Visual Communication
+                      </MenuItem>
 
-                    <ListSubheader style={{ textAlign: "Center", color: "maroon" }}>
-                      COLLEGE OF COMPUTING STUDIES
-                    </ListSubheader>
-                    <MenuItem value="Bachelor of Science in Computer Science (BSCS)">
-                      Bachelor of Science in Computer Science (BSCS)
-                    </MenuItem>
-                    <MenuItem value="Bachelor of Science in Information Technology (BS INFO. TECH.)">
-                      Bachelor of Science in Information Technology (BS INFO. TECH.)
-                    </MenuItem>
+                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
+                        COLLEGE OF ARTS AND SCIENCES
+                      </ListSubheader>
+                      <MenuItem value="Bachelor of Science in Applied Physics w/ Comp. Sci. Emphasis (BSAP)">
+                        Bachelor of Science in Applied Physics w/ Comp. Sci. Emphasis (BSAP)
+                      </MenuItem>
+                      <MenuItem value="Bachelor of Science in Psychology (BSPSYCH)">
+                        Bachelor of Science in Psychology (BSPSYCH)
+                      </MenuItem>
+                      <MenuItem value="Bachelor of Science in Mathematics (BSMATH)">
+                        Bachelor of Science in Mathematics (BSMATH)
+                      </MenuItem>
 
-                    <ListSubheader style={{ textAlign: "Center", color: "maroon" }}>
-                      COLLEGE OF BUSINESS ADMINISTRATION
-                    </ListSubheader>
-                    <MenuItem value="BSBA - Marketing Management">
-                      BSBA - Marketing Management
-                    </MenuItem>
-                    <MenuItem value="BSBA - Human Resource Dev't Management (HRDM)">
-                      BSBA - Human Resource Dev't Management (HRDM)
-                    </MenuItem>
-                    <MenuItem value="Bachelor of Science in Entrepreneurship (BSEM)">
-                      Bachelor of Science in Entrepreneurship (BSEM)
-                    </MenuItem>
-                    <MenuItem value="Bachelor of Science in Office Administration (BSOA)">
-                      Bachelor of Science in Office Administration (BSOA)
-                    </MenuItem>
+                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
+                        COLLEGE OF COMPUTING STUDIES
+                      </ListSubheader>
+                      <MenuItem value="Bachelor of Science in Computer Science (BSCS)">
+                        Bachelor of Science in Computer Science (BSCS)
+                      </MenuItem>
+                      <MenuItem value="Bachelor of Science in Information Technology (BS INFO. TECH.)">
+                        Bachelor of Science in Information Technology (BS INFO. TECH.)
+                      </MenuItem>
 
-                    <ListSubheader style={{ textAlign: "Center", color: "maroon" }}>
-                      COLLEGE OF EDUCATIONS
-                    </ListSubheader>
-                    <MenuItem value="Bachelor in Secondary Education - Science">
-                      Bachelor in Secondary Education - Science
-                    </MenuItem>
-                    <MenuItem value="Bachelor in Secondary Education - Mathematics">
-                      Bachelor in Secondary Education - Mathematics
-                    </MenuItem>
-                    <MenuItem value="Bachelor in Secondary Education - Filipino">
-                      Bachelor in Secondary Education - Filipino
-                    </MenuItem>
-                    <MenuItem value="Bachelor in Special Needs Education (BSNEd)">
-                      Bachelor in Special Needs Education (BSNEd)
-                    </MenuItem>
-                    <MenuItem value="BTLE - Home Economics">
-                      BTLE - Home Economics
-                    </MenuItem>
-                    <MenuItem value="BTLE - Industrial Arts">
-                      BTLE - Industrial Arts
-                    </MenuItem>
-                    <MenuItem value="Professional Education / Subjects 18 units (TCP)">
-                      Professional Education / Subjects 18 units (TCP)
-                    </MenuItem>
+                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
+                        COLLEGE OF BUSINESS ADMINISTRATION
+                      </ListSubheader>
+                      <MenuItem value="BSBA - Marketing Management">
+                        BSBA - Marketing Management
+                      </MenuItem>
+                      <MenuItem value="BSBA - Human Resource Dev't Management (HRDM)">
+                        BSBA - Human Resource Dev't Management (HRDM)
+                      </MenuItem>
+                      <MenuItem value="Bachelor of Science in Entrepreneurship (BSEM)">
+                        Bachelor of Science in Entrepreneurship (BSEM)
+                      </MenuItem>
+                      <MenuItem value="Bachelor of Science in Office Administration (BSOA)">
+                        Bachelor of Science in Office Administration (BSOA)
+                      </MenuItem>
 
-                    <ListSubheader style={{ textAlign: "Center", color: "maroon" }}>
-                      COLLEGE OF ENGINEERING
-                    </ListSubheader>
-                    <MenuItem value="Bachelor of Science in Chemical Engineering (BSCHE)">
-                      Bachelor of Science in Chemical Engineering (BSCHE)
-                    </MenuItem>
-                    <MenuItem value="Bachelor of Science in Civil Engineering (BSCE)">
-                      Bachelor of Science in Civil Engineering (BSCE)
-                    </MenuItem>
-                    <MenuItem value="Bachelor of Science in Electrical Engineering (BSEE)">
-                      Bachelor of Science in Electrical Engineering (BSEE)
-                    </MenuItem>
-                    <MenuItem value="Bachelor of Science in Electronics and Communication Eng (BSECE)">
-                      Bachelor of Science in Electronics and Communication Eng (BSECE)
-                    </MenuItem>
-                    <MenuItem value="Bachelor of Science in Mechanical Engineering (BSME)">
-                      Bachelor of Science in Mechanical Engineering (BSME)
-                    </MenuItem>
-                    <MenuItem value="Bachelor of Science in Computer Engineering (BSCOE)">
-                      Bachelor of Science in Computer Engineering (BSCOE)
-                    </MenuItem>
+                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
+                        COLLEGE OF EDUCATIONS
+                      </ListSubheader>
+                      <MenuItem value="Bachelor in Secondary Education - Science">
+                        Bachelor in Secondary Education - Science
+                      </MenuItem>
+                      <MenuItem value="Bachelor in Secondary Education - Mathematics">
+                        Bachelor in Secondary Education - Mathematics
+                      </MenuItem>
+                      <MenuItem value="Bachelor in Secondary Education - Filipino">
+                        Bachelor in Secondary Education - Filipino
+                      </MenuItem>
+                      <MenuItem value="Bachelor in Special Needs Education (BSNEd)">
+                        Bachelor in Special Needs Education (BSNEd)
+                      </MenuItem>
+                      <MenuItem value="BTLE - Home Economics">BTLE - Home Economics</MenuItem>
+                      <MenuItem value="BTLE - Industrial Arts">BTLE - Industrial Arts</MenuItem>
+                      <MenuItem value="Professional Education / Subjects 18 units (TCP)">
+                        Professional Education / Subjects 18 units (TCP)
+                      </MenuItem>
 
-                    <ListSubheader style={{ textAlign: "Center", color: "maroon" }}>
-                      COLLEGE OF HOSPITALITY MANAGEMENT (CHTM)
-                    </ListSubheader>
-                    <MenuItem value="Bachelor of Science in Tourism Management (BST)">
-                      Bachelor of Science in Tourism Management (BST)
-                    </MenuItem>
-                    <MenuItem value="Bachelor of Science in Hospitality Management (BSHM)">
-                      Bachelor of Science in Hospitality Management (BSHM)
-                    </MenuItem>
+                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
+                        COLLEGE OF ENGINEERING
+                      </ListSubheader>
+                      <MenuItem value="Bachelor of Science in Chemical Engineering (BSCHE)">
+                        Bachelor of Science in Chemical Engineering (BSCHE)
+                      </MenuItem>
+                      <MenuItem value="Bachelor of Science in Civil Engineering (BSCE)">
+                        Bachelor of Science in Civil Engineering (BSCE)
+                      </MenuItem>
+                      <MenuItem value="Bachelor of Science in Electrical Engineering (BSEE)">
+                        Bachelor of Science in Electrical Engineering (BSEE)
+                      </MenuItem>
+                      <MenuItem value="Bachelor of Science in Electronics and Communication Eng (BSECE)">
+                        Bachelor of Science in Electronics and Communication Eng (BSECE)
+                      </MenuItem>
+                      <MenuItem value="Bachelor of Science in Mechanical Engineering (BSME)">
+                        Bachelor of Science in Mechanical Engineering (BSME)
+                      </MenuItem>
+                      <MenuItem value="Bachelor of Science in Computer Engineering (BSCOE)">
+                        Bachelor of Science in Computer Engineering (BSCOE)
+                      </MenuItem>
 
-                    <ListSubheader style={{ textAlign: "Center", color: "maroon" }}>
-                      COLLEGE OF INDUSTRIAL TECHNOLOGY
-                    </ListSubheader>
-                    <MenuItem value="BSIT - Automotive Technology">
-                      BSIT - Automotive Technology
-                    </MenuItem>
-                    <MenuItem value="BSIT - Electrical Technology">
-                      BSIT - Electrical Technology
-                    </MenuItem>
-                    <MenuItem value="BSIT - Electronics Technology">
-                      BSIT - Electronics Technology
-                    </MenuItem>
-                    <MenuItem value="BSIT - Food Technology">
-                      BSIT - Food Technology
-                    </MenuItem>
-                    <MenuItem value="BSIT - Fashion and Apparel Technology">
-                      BSIT - Fashion and Apparel Technology
-                    </MenuItem>
-                    <MenuItem value="BSIT - Industrial Chemistry">
-                      BSIT - Industrial Chemistry
-                    </MenuItem>
-                    <MenuItem value="BSIT - Drafting Technology">
-                      BSIT - Drafting Technology
-                    </MenuItem>
-                    <MenuItem value="BSIT - Machine Shop Technology">
-                      BSIT - Machine Shop Technology
-                    </MenuItem>
-                    <MenuItem value="BSIT - Refrigeration and Air Conditioning">
-                      BSIT - Refrigeration and Air Conditioning
-                    </MenuItem>
+                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
+                        COLLEGE OF HOSPITALITY MANAGEMENT (CHTM)
+                      </ListSubheader>
+                      <MenuItem value="Bachelor of Science in Tourism Management (BST)">
+                        Bachelor of Science in Tourism Management (BST)
+                      </MenuItem>
+                      <MenuItem value="Bachelor of Science in Hospitality Management (BSHM)">
+                        Bachelor of Science in Hospitality Management (BSHM)
+                      </MenuItem>
 
-                    <ListSubheader style={{ textAlign: "Center", color: "maroon" }}>
-                      COLLEGE OF PUBLIC ADMINISTRATION AND CRIMINOLOGY
-                    </ListSubheader>
-                    <MenuItem value="Bachelor in Public Administration (BPA)">
-                      Bachelor in Public Administration (BPA)
-                    </MenuItem>
-                    <MenuItem value="Bachelor of Science in Criminology (BSCRIM)">
-                      Bachelor of Science in Criminology (BSCRIM)
-                    </MenuItem>
-                  </Select>
-                </FormControl>
+                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
+                        COLLEGE OF INDUSTRIAL TECHNOLOGY
+                      </ListSubheader>
+                      <MenuItem value="BSIT - Automotive Technology">
+                        BSIT - Automotive Technology
+                      </MenuItem>
+                      <MenuItem value="BSIT - Electrical Technology">
+                        BSIT - Electrical Technology
+                      </MenuItem>
+                      <MenuItem value="BSIT - Electronics Technology">
+                        BSIT - Electronics Technology
+                      </MenuItem>
+                      <MenuItem value="BSIT - Food Technology">
+                        BSIT - Food Technology
+                      </MenuItem>
+                      <MenuItem value="BSIT - Fashion and Apparel Technology">
+                        BSIT - Fashion and Apparel Technology
+                      </MenuItem>
+                      <MenuItem value="BSIT - Industrial Chemistry">
+                        BSIT - Industrial Chemistry
+                      </MenuItem>
+                      <MenuItem value="BSIT - Drafting Technology">
+                        BSIT - Drafting Technology
+                      </MenuItem>
+                      <MenuItem value="BSIT - Machine Shop Technology">
+                        BSIT - Machine Shop Technology
+                      </MenuItem>
+                      <MenuItem value="BSIT - Refrigeration and Air Conditioning">
+                        BSIT - Refrigeration and Air Conditioning
+                      </MenuItem>
+
+                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
+                        COLLEGE OF PUBLIC ADMINISTRATION AND CRIMINOLOGY
+                      </ListSubheader>
+                      <MenuItem value="Bachelor in Public Administration (BPA)">
+                        Bachelor in Public Administration (BPA)
+                      </MenuItem>
+                      <MenuItem value="Bachelor of Science in Criminology (BSCRIM)">
+                        Bachelor of Science in Criminology (BSCRIM)
+                      </MenuItem>
+                    </Select>
+                  </FormControl>
+                ))}
+
               </Box>
 
 
@@ -598,22 +731,40 @@ const ApplicantForm = () => {
                 <Typography style={{ fontSize: "15px", marginRight: "10px", minWidth: "150px" }}>
                   Year Level: <span style={{ color: "red" }}>*</span>
                 </Typography>
-                <FormControl sx={{ width: "80%" }} size="small">
-                  <InputLabel id="year-level-label">Select Year Level</InputLabel>
-                  <Select
-                    labelId="year-level-label"
-                    id="year-level-select"
-                    value={data[0]?.yearLevel || ""} // Just like your TextField uses data[0]?.lastName
-                    label="Select Year Level"
+                {students.map((student) => (
+                  <FormControl sx={{ width: "80%" }} size="small" key={student.person_id}>
+                    <InputLabel id={`year-level-label-${student.person_id}`}>
+                      Select Year Level
+                    </InputLabel>
+                    <Select
+                      labelId={`year-level-label-${student.person_id}`}
+                      id={`year-level-select-${student.person_id}`}
+                      value={student.yearLevel || ""}
+                      label="Select Year Level"
+                      onChange={(e) => {
+                        const updatedYearLevel = e.target.value;
+                        const updatedStudent = { ...student, yearLevel: updatedYearLevel };
 
-                  >
-                    <MenuItem value="First Year">First Year</MenuItem>
-                    <MenuItem value="Second Year">Second Year</MenuItem>
-                    <MenuItem value="Third Year">Third Year</MenuItem>
-                    <MenuItem value="Fourth Year">Fourth Year</MenuItem>
-                    <MenuItem value="Fifth Year">Fifth Year</MenuItem>
-                  </Select>
-                </FormControl>
+                        // Update local state
+                        setStudents((prevStudents) =>
+                          prevStudents.map((s) =>
+                            s.person_id === student.person_id ? updatedStudent : s
+                          )
+                        );
+
+                        // Immediately update backend
+                        updateItem(updatedStudent);
+                      }}
+                    >
+                      <MenuItem value="First Year">First Year</MenuItem>
+                      <MenuItem value="Second Year">Second Year</MenuItem>
+                      <MenuItem value="Third Year">Third Year</MenuItem>
+                      <MenuItem value="Fourth Year">Fourth Year</MenuItem>
+                      <MenuItem value="Fifth Year">Fifth Year</MenuItem>
+                    </Select>
+                  </FormControl>
+                ))}
+
               </Box>
 
             </Box>
@@ -656,124 +807,190 @@ const ApplicantForm = () => {
           <Typography style={{ fontSize: "20px", color: "#6D2323", fontWeight: "bold" }}>Person Details:</Typography>
           <hr style={{ border: "1px solid #ccc", width: "100%" }} />
           <br />
-
-          <Box display="flex" gap={2} width="100%" >
-            <Typography style={{ fontSize: "15px", marginRight: "10px", minWidth: "150px", textAlign: "Center", marginTop: "10px" }}>
-              Name: <span style={{ color: "red" }}>*</span>
-            </Typography>
-
-            {/* Last Name */}
-            <Box width="19%">
-
-              <TextField
-                label="Enter Last Name"
-                required
-                sx={{ width: "85%" }}
-                size="small"
-                value={data[0]?.lastName || ""}
-
-              />
-              Family Name
+          <Box display="flex" width="100%" alignItems="flex-start" gap={1} mb={2}>
+            {/* Label beside Last Name */}
+            <Box minWidth="100px" mt={1.5}>
+              <Typography fontSize="15px">
+                <strong>
+                  Name: <span style={{ color: "red" }}>*</span>
+                </strong>
+              </Typography>
             </Box>
 
-            {/* First Name */}
-            <Box width="19%">
-
-              <TextField
-                label="Enter First Name"
-                required
-                sx={{ width: "85%" }}
-                size="small"
-                value={data[0]?.firstName || ""}
-
-              />
-              GIVEN NAME
-            </Box>
-
-            {/* Middle Name */}
-            <Box width="19%">
-
-              <TextField
-                label="Enter Middle Name"
-                required
-                sx={{ width: "85%" }}
-                size="small"
-                value={data[0]?.middleName || ""}
-
-              />
-              MIDDLE NAME
-            </Box>
-
-            {/* Extension */}
-            <Box width="10%">
-              <FormControl sx={{ width: "85%" }} size="small">
-                <InputLabel id="extension-label">EXT.</InputLabel>
-                <Select
-                  labelId="extension-label"
-                  id="extension-select"
-                  value={data[0]?.extension || ""}
-                  label="EXT."
-
+            {/* Student Input Fields */}
+            <Box width="100%">
+              {students.map((student) => (
+                <Box
+                  key={student.person_id}
+                  display="flex"
+                  gap={2}
+                  flexWrap="wrap"
+                  mb={2}
+                  width="100%"
                 >
-                  <MenuItem value="">None</MenuItem>
-                  <MenuItem value="Jr.">Jr.</MenuItem>
-                  <MenuItem value="Sr.">Sr.</MenuItem>
-                  <MenuItem value="I">I</MenuItem>
-                  <MenuItem value="II">II</MenuItem>
-                  <MenuItem value="III">III</MenuItem>
-                  <MenuItem value="IV">IV</MenuItem>
-                  <MenuItem value="V">V</MenuItem>
-                </Select>
-              </FormControl>
+                  {/* Last Name */}
+                  <Box width="19%">
+                    <TextField
+                      label="Enter Last Name"
+                      required
+                      sx={{ width: "85%" }}
+                      size="small"
+                      value={student.lastName || ""}
+                      onChange={(e) => {
+                        const updatedStudent = { ...student, lastName: e.target.value };
+                        setStudents((prev) =>
+                          prev.map((s) =>
+                            s.person_id === student.person_id ? updatedStudent : s
+                          )
+                        );
+                        updateItem(updatedStudent);
+                      }}
+                    />
+                    <Typography variant="caption">FAMILY NAME</Typography>
+                  </Box>
+
+                  {/* First Name */}
+                  <Box width="19%">
+                    <TextField
+                      label="Enter First Name"
+                      required
+                      sx={{ width: "85%" }}
+                      size="small"
+                      value={student.firstName || ""}
+                      onChange={(e) => {
+                        const updatedStudent = { ...student, firstName: e.target.value };
+                        setStudents((prev) =>
+                          prev.map((s) =>
+                            s.person_id === student.person_id ? updatedStudent : s
+                          )
+                        );
+                        updateItem(updatedStudent);
+                      }}
+                    />
+                    <Typography variant="caption">GIVEN NAME</Typography>
+                  </Box>
+
+                  {/* Middle Name */}
+                  <Box width="19%">
+                    <TextField
+                      label="Enter Middle Name"
+                      required
+                      sx={{ width: "85%" }}
+                      size="small"
+                      value={student.middleName || ""}
+                      onChange={(e) => {
+                        const updatedStudent = { ...student, middleName: e.target.value };
+                        setStudents((prev) =>
+                          prev.map((s) =>
+                            s.person_id === student.person_id ? updatedStudent : s
+                          )
+                        );
+                        updateItem(updatedStudent);
+                      }}
+                    />
+                    <Typography variant="caption">MIDDLE NAME</Typography>
+                  </Box>
+
+                  {/* Extension */}
+                  <Box width="10%">
+                    <FormControl sx={{ width: "85%" }} size="small">
+                      <InputLabel id={`extension-label-${student.person_id}`}>EXT.</InputLabel>
+                      <Select
+                        labelId={`extension-label-${student.person_id}`}
+                        id={`extension-select-${student.person_id}`}
+                        value={student.extension || ""}
+                        label="EXT."
+                        onChange={(e) => {
+                          const updatedStudent = { ...student, extension: e.target.value };
+                          setStudents((prev) =>
+                            prev.map((s) =>
+                              s.person_id === student.person_id ? updatedStudent : s
+                            )
+                          );
+                          updateItem(updatedStudent);
+                        }}
+                      >
+                        <MenuItem value="">None</MenuItem>
+                        <MenuItem value="Jr.">Jr.</MenuItem>
+                        <MenuItem value="Sr.">Sr.</MenuItem>
+                        <MenuItem value="I">I</MenuItem>
+                        <MenuItem value="II">II</MenuItem>
+                        <MenuItem value="III">III</MenuItem>
+                        <MenuItem value="IV">IV</MenuItem>
+                        <MenuItem value="V">V</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <Typography variant="caption">EXTENSION</Typography>
+                  </Box>
+
+                  {/* Nickname */}
+                  <Box width="19%">
+                    <TextField
+                      label="Enter Nickname"
+                      sx={{ width: "85%" }}
+                      size="small"
+                      value={student.nickname || ""}
+                      onChange={(e) => {
+                        const updatedStudent = { ...student, nickname: e.target.value };
+                        setStudents((prev) =>
+                          prev.map((s) =>
+                            s.person_id === student.person_id ? updatedStudent : s
+                          )
+                        );
+                        updateItem(updatedStudent);
+                      }}
+                    />
+                    <Typography variant="caption">NICKNAME</Typography>
+                  </Box>
+                </Box>
+              ))}
             </Box>
+          </Box>
 
-
-            {/* Nickname */}
-            <Box width="19%">
-
+          {students.map((student) => (
+            <Box key={student.person_id} display="flex" alignItems="center" mb={2}>
+              <Typography style={{ fontSize: "12px", marginRight: "20px" }}>
+                Height:
+              </Typography>
               <TextField
-                label="Enter Nickname"
-                sx={{ width: "85%" }}
+                required
+                value={student.height || ""}
+                onChange={(e) => {
+                  const updatedStudent = { ...student, height: e.target.value };
+                  setStudents((prev) =>
+                    prev.map((s) =>
+                      s.person_id === student.person_id ? updatedStudent : s
+                    )
+                  );
+                  updateItem(updatedStudent);
+                }}
+                sx={{ width: "10%", marginRight: "10px" }}
                 size="small"
-                value={data[0]?.nickname || ""}
-                onChange={(e) =>
-                  setNewApplicant({ ...newApplicant, nickname: e.target.value })
-                }
               />
-              NICK NAME
+              cm.
+              <span style={{ marginRight: "20px" }}></span>
+
+              <Typography style={{ fontSize: "12px", marginRight: "20px" }}>
+                Weight:
+              </Typography>
+              <TextField
+                required
+                value={student.weight || ""}
+                onChange={(e) => {
+                  const updatedStudent = { ...student, weight: e.target.value };
+                  setStudents((prev) =>
+                    prev.map((s) =>
+                      s.person_id === student.person_id ? updatedStudent : s
+                    )
+                  );
+                  updateItem(updatedStudent);
+                }}
+                sx={{ width: "10%", marginRight: "10px" }}
+                size="small"
+              />
+              kg
             </Box>
-          </Box>
-          < br />
-
-
-          <Box display="flex" alignItems="center" mb={2}>
-            <Typography style={{ fontSize: "12px", marginRight: "20px" }}>
-              Height:
-            </Typography>
-            <TextField
-
-              required
-              value={data[0]?.height || ""}
-
-              sx={{ width: "10%", marginRight: "10px" }}
-              size="small"
-            />
-            cm.
-            <span style={{ marginRight: "20px" }}>
-            </span>
-            <Typography style={{ fontSize: "12px", marginRight: "20px" }}>
-              Weight:
-            </Typography>
-            <TextField
-
-              required
-              value={data[0]?.weight || ""}
-
-              sx={{ width: "10%", marginRight: "10px" }}
-              size="small"
-            />
-            kg
-          </Box>
+          ))}
 
 
 
@@ -808,22 +1025,36 @@ const ApplicantForm = () => {
               Gender: <span style={{ color: "red" }}>*</span>
             </Typography>
 
-            <FormControl sx={{ width: "15%" }} size="small">
-              <InputLabel id="gender-label">Select Gender</InputLabel>
-              <Select
-                labelId="gender-label"
-                id="gender-select"
-                value={data[0]?.gender || ""}
-                label="Select Gender"
-                onChange={(e) =>
-                  setNewApplicant({ ...newApplicant, gender: e.target.value })
-                }
-              >
+            {students.map((student) => (
+              <FormControl sx={{ width: "15%" }} size="small" key={student.person_id}>
+                <InputLabel id={`gender-label-${student.person_id}`}>Select Gender</InputLabel>
+                <Select
+                  labelId={`gender-label-${student.person_id}`}
+                  id={`gender-select-${student.person_id}`}
+                  value={student.gender ?? ""}
+                  label="Select Gender"
+                  onChange={(e) => {
+                    const updatedGender = e.target.value;
+                    const updatedStudent = { ...student, gender: updatedGender };
 
-                <MenuItem value="MALE">MALE</MenuItem>
-                <MenuItem value="FEMALE">FEMALE</MenuItem>
-              </Select>
-            </FormControl>
+                    // Update local state
+                    setStudents((prevStudents) =>
+                      prevStudents.map((s) =>
+                        s.person_id === student.person_id ? updatedStudent : s
+                      )
+                    );
+
+                    // Immediately update backend
+                    updateItem(updatedStudent);
+                  }}
+                >
+                  <MenuItem value={0}>MALE</MenuItem>
+                  <MenuItem value={1}>FEMALE</MenuItem>
+                </Select>
+              </FormControl>
+            ))}
+
+
 
             {/* PWD */}
             <FormControlLabel
@@ -878,350 +1109,314 @@ const ApplicantForm = () => {
             )}
           </Box>
 
+          {students.map((student) => (
+            <Box key={student.person_id} display="flex" gap={2} mb={2}>
+              {/* Birthdate Field */}
+              <Box display="flex" flexDirection="column" style={{ width: "50%" }}>
+                <Typography style={{ fontSize: "12px", marginBottom: "5px" }}>
+                  Birth of Date:
+                </Typography>
+                <TextField
+                  label="Select Birthdate"
+                  type="date"
+                  size="small"
+                  InputLabelProps={{ shrink: true }}
+                  required
+                  style={{ width: "100%" }}
+                  value={student.birthOfDate || ""}
+                  onChange={(e) => {
+                    const updatedStudent = { ...student, birthOfDate: e.target.value };
+                    setStudents((prev) =>
+                      prev.map((s) =>
+                        s.person_id === student.person_id ? updatedStudent : s
+                      )
+                    );
+                    updateItem(updatedStudent); // Optional: if you're syncing with backend
+                  }}
+                />
+              </Box>
+
+              {/* Age Field */}
+              <Box display="flex" flexDirection="column" style={{ width: "50%" }}>
+                <Typography style={{ fontSize: "13px", marginBottom: "5px" }}>
+                  Age:
+                </Typography>
+                <TextField
+                  label="Enter your Age"
+                  required
+                  style={{ width: "100%" }}
+                  size="small"
+                  value={student.age || ""}
+                  onChange={(e) => {
+                    const updatedStudent = { ...student, age: e.target.value };
+                    setStudents((prev) =>
+                      prev.map((s) =>
+                        s.person_id === student.person_id ? updatedStudent : s
+                      )
+                    );
+                    updateItem(updatedStudent); // Optional: if you're syncing with backend
+                  }}
+                />
+              </Box>
+            </Box>
+          ))}
+
+          {students.map((student) => (
+            <Box key={student.person_id} display="flex" alignItems="center" gap={2} mb={2}>
+              {/* Birth Place Field */}
+              <Box display="flex" flexDirection="column" style={{ width: "50%" }}>
+                <Typography style={{ fontSize: "12px", marginBottom: "5px" }}>
+                  Birth Place:
+                </Typography>
+                <TextField
+                  label="Enter your Birth Place"
+                  required
+                  value={student.birthPlace || ""}
+                  onChange={(e) => {
+                    const updatedStudent = { ...student, birthPlace: e.target.value };
+                    setStudents((prev) =>
+                      prev.map((s) =>
+                        s.person_id === student.person_id ? updatedStudent : s
+                      )
+                    );
+                    updateItem(updatedStudent); // Optional: if you're syncing with backend
+                  }}
+                  sx={{ width: "100%" }}
+                  size="small"
+                />
+              </Box>
+
+              {/* Language Dialect Spoken Field */}
+              <Box display="flex" flexDirection="column" style={{ width: "50%" }}>
+                <Typography style={{ fontSize: "12px", marginBottom: "5px" }}>
+                  Language Dialect Spoken:
+                </Typography>
+                <TextField
+                  label="Enter your Language Dialect Spoken"
+                  required
+                  value={student.languageDialectSpoken || ""}
+                  onChange={(e) => {
+                    const updatedStudent = { ...student, languageDialectSpoken: e.target.value };
+                    setStudents((prev) =>
+                      prev.map((s) =>
+                        s.person_id === student.person_id ? updatedStudent : s
+                      )
+                    );
+                    updateItem(updatedStudent); // Optional: if you're syncing with backend
+                  }}
+                  sx={{ width: "100%" }}
+                  size="small"
+                />
+              </Box>
+            </Box>
+          ))}
 
 
-          <Box display="flex" gap={2} mb={2}>
-            {/* Birthdate Field */}
 
-            <Typography style={{ fontSize: "12px", marginBottom: "5px" }}>
-              Birth of Date:
-            </Typography>
-            <TextField
-              label="Select Birthdate"
-              type="date"
-              size="small"
-              InputLabelProps={{ shrink: true }}
-              required
-              style={{ width: "35%", marginRight: "50px" }}
-              value={data[0]?.birthOfDate || ""}
-              onChange={(e) =>
-                setNewApplicant({ ...newApplicant, birthOfDate: e.target.value })
-              }
-            />
+          {students.map((student) => (
+            <Box key={student.person_id} display="flex" alignItems="center" gap={2} mb={2}>
+              {/* Citizenship Field */}
+              <FormControl sx={{ width: "50%" }} size="small" required>
+                <Typography style={{ fontSize: "12px", marginBottom: "5px" }}>
+                  Citizenship:
+                </Typography>
+                <Select
+                  value={student.citizenship || ""}
+                  onChange={(e) => {
+                    const updatedStudent = { ...student, citizenship: e.target.value };
+                    setStudents((prev) =>
+                      prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                    );
+                    updateItem(updatedStudent);
+                  }}
+                >
+                  <MenuItem value="">- Select Citizenship -</MenuItem>
+                  {[
+                    "AFGHAN", "ALBANIAN", "ARAB", "ARGENTINIAN", "AUSTRALIAN", "AUSTRIAN", "BELGIAN", "BANGLADESHI", "BAHAMIAN",
+                    "BHUTANESE", "BERMUDAN", "BOLIVIAN", "BRAZILIAN", "BRUNEI", "BOTSWANIAN", "CANADIAN", "CHILE", "CHINESE",
+                    "COLOMBIAN", "COSTA RICAN", "CUBAN", "CYPRIOT", "CZECH", "DANISH", "DOMINICAN", "ALGERIAN", "EGYPTIAN",
+                    "SPANISH", "ESTONIAN", "ETHIOPIAN", "FIJI", "FILIPINO", "FINISH", "FRENCH", "BRITISH", "GERMAN", "GHANAIAN",
+                    "GREEK", "GUAMANIAN", "GUATEMALAN", "HONG KONG", "CROATIAN", "HAITIAN", "HUNGARIAN", "INDONESIAN", "INDIAN",
+                    "IRANIAN", "IRAQI", "IRISH", "ICELANDER", "ISRAELI", "ITALIAN", "JAMAICAN", "JORDANIAN", "JAPANESE", "CAMBODIAN",
+                    "KOREAN", "KUWAITI", "KENYAN", "LAOTIAN", "LEBANESE", "LIBYAN", "LUXEMBURGER", "MALAYSIAN", "MOROCCAN", "MEXICAN",
+                    "BURMESE", "MYANMAR", "NIGERIAN", "NOT INDICATED", "DUTCH", "NORWEGIAN", "NEPALI", "NEW ZEALANDER", "OMANI",
+                    "PAKISTANI", "PANAMANIAN", "PERUVIAN", "PAPUAN", "POLISH", "PUERTO RICAN", "PORTUGUESE", "PARAGUAYAN",
+                    "PALESTINIAN", "QATARI", "ROMANIAN", "RUSSIAN", "RWANDAN", "SAUDI ARABIAN", "SUDANESE", "SINGAPOREAN",
+                    "SRI LANKAN", "EL SALVADORIAN", "SOMALIAN", "SLOVAK", "SWEDISH", "SWISS", "SYRIAN", "THAI", "TRINIDAD AND TOBAGO",
+                    "TUNISIAN", "TURKISH", "TAIWANESE", "UKRAINIAN", "URUGUAYAN", "UNITED STATES", "VENEZUELAN", "VIRGIN ISLANDS",
+                    "VIETNAMESE", "YEMENI", "YUGOSLAVIAN", "SOUTH AFRICAN", "ZAIREAN", "ZIMBABWEAN", "Others"
+                  ].map((nation) => (
+                    <MenuItem key={nation} value={nation}>{nation}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
 
-            <Typography style={{ fontSize: "12px", marginRight: "120px" }}>
-              Age:
-            </Typography>
-            <TextField
-              label="Enter your Age"
-              required
-              style={{ width: "37%" }}
-              size="small"
-              value={data[0]?.age || ""}
-              onChange={(e) =>
-                setNewApplicant({ ...newApplicant, age: e.target.value })
-              }
-            />
-
-          </Box>
-
-
-          <Box display="flex" alignItems="center" mb={2}>
-            <Typography style={{ fontSize: "12px", marginRight: "20px" }}>
-              Birth Place:
-            </Typography>
-            <TextField
-              label="Enter your Birth Place"
-              required
-              value={data[0]?.birthPlace || ""}
-              onChange={(e) => setNewApplicant({ ...newApplicant, birthPlace: e.target.value })}
-              sx={{ width: "36%", marginRight: "50px" }}
-              size="small"
-            />
-
-            <Typography style={{ fontSize: "12px", marginRight: "20px" }}>
-              Language Dialect Spoken:
-            </Typography>
-            <TextField
-              label="Enter your Language Dialect Spoken"
-              required
-              value={data[0]?.languageDialectSpoken || ""}
-              onChange={(e) => setNewApplicant({ ...newApplicant, languageDialectSpoken: e.target.value })}
-              sx={{ width: "37%" }}
-              size="small"
-            />
-          </Box>
-
-
-          <Box display="flex" alignItems="center" mb={2}>
-            <Typography style={{ fontSize: "12px", marginRight: "15px" }}>
-              Citizenship:
-            </Typography>
-            <FormControl sx={{ width: "36%", marginRight: "50px" }} size="small" required>
-              <InputLabel id="citizenship-label">Citizenship</InputLabel>
-              <Select
-                labelId="citizenship-label"
-                value={data[0]?.citizenship || ""}
-                label="Citizenship"
-                sx={{ width: "102%", marginRight: "50px" }}
-                onChange={(e) =>
-                  setNewApplicant({ ...newApplicant, citizenship: e.target.value })
-                }
-              >
-                <MenuItem value="">- Select Citizenship -</MenuItem>
-                <MenuItem value="AFGHAN">AFGHAN</MenuItem>
-                <MenuItem value="ALBANIAN">ALBANIAN</MenuItem>
-                <MenuItem value="ARAB">ARAB</MenuItem>
-                <MenuItem value="ARGENTINIAN">ARGENTINIAN</MenuItem>
-                <MenuItem value="AUSTRALIAN">AUSTRALIAN</MenuItem>
-                <MenuItem value="AUSTRIAN">AUSTRIAN</MenuItem>
-                <MenuItem value="BELGIAN">BELGIAN</MenuItem>
-                <MenuItem value="BANGLADESHI">BANGLADESHI</MenuItem>
-                <MenuItem value="BAHAMIAN">BAHAMIAN</MenuItem>
-                <MenuItem value="BHUTANESE">BHUTANESE</MenuItem>
-                <MenuItem value="BERMUDAN">BERMUDAN</MenuItem>
-                <MenuItem value="BOLIVIAN">BOLIVIAN</MenuItem>
-                <MenuItem value="BRAZILIAN">BRAZILIAN</MenuItem>
-                <MenuItem value="BRUNEI">BRUNEI</MenuItem>
-                <MenuItem value="BOTSWANIAN">BOTSWANIAN</MenuItem>
-                <MenuItem value="CANADIAN">CANADIAN</MenuItem>
-                <MenuItem value="CHILE">CHILE</MenuItem>
-                <MenuItem value="CHINESE">CHINESE</MenuItem>
-                <MenuItem value="COLOMBIAN">COLOMBIAN</MenuItem>
-                <MenuItem value="COSTA RICAN">COSTA RICAN</MenuItem>
-                <MenuItem value="CUBAN">CUBAN</MenuItem>
-                <MenuItem value="CYPRIOT">CYPRIOT</MenuItem>
-                <MenuItem value="CZECH">CZECH</MenuItem>
-                <MenuItem value="DANISH">DANISH</MenuItem>
-                <MenuItem value="DOMINICAN">DOMINICAN</MenuItem>
-                <MenuItem value="ALGERIAN">ALGERIAN</MenuItem>
-                <MenuItem value="EGYPTIAN">EGYPTIAN</MenuItem>
-                <MenuItem value="SPANISH">SPANISH</MenuItem>
-                <MenuItem value="ESTONIAN">ESTONIAN</MenuItem>
-                <MenuItem value="ETHIOPIAN">ETHIOPIAN</MenuItem>
-                <MenuItem value="FIJI">FIJI</MenuItem>
-                <MenuItem value="FILIPINO">FILIPINO</MenuItem>
-                <MenuItem value="FINISH">FINISH</MenuItem>
-                <MenuItem value="FRENCH">FRENCH</MenuItem>
-                <MenuItem value="BRITISH">BRITISH</MenuItem>
-                <MenuItem value="GERMAN">GERMAN</MenuItem>
-                <MenuItem value="GHANAIAN">GHANAIAN</MenuItem>
-                <MenuItem value="GREEK">GREEK</MenuItem>
-                <MenuItem value="GUAMANIAN">GUAMANIAN</MenuItem>
-                <MenuItem value="GUATEMALAN">GUATEMALAN</MenuItem>
-                <MenuItem value="HONG KONG">HONG KONG</MenuItem>
-                <MenuItem value="CROATIAN">CROATIAN</MenuItem>
-                <MenuItem value="HAITIAN">HAITIAN</MenuItem>
-                <MenuItem value="HUNGARIAN">HUNGARIAN</MenuItem>
-                <MenuItem value="INDONESIAN">INDONESIAN</MenuItem>
-                <MenuItem value="INDIAN">INDIAN</MenuItem>
-                <MenuItem value="IRANIAN">IRANIAN</MenuItem>
-                <MenuItem value="IRAQI">IRAQI</MenuItem>
-                <MenuItem value="IRISH">IRISH</MenuItem>
-                <MenuItem value="ICELANDER">ICELANDER</MenuItem>
-                <MenuItem value="ISRAELI">ISRAELI</MenuItem>
-                <MenuItem value="ITALIAN">ITALIAN</MenuItem>
-                <MenuItem value="JAMAICAN">JAMAICAN</MenuItem>
-                <MenuItem value="JORDANIAN">JORDANIAN</MenuItem>
-                <MenuItem value="JAPANESE">JAPANESE</MenuItem>
-                <MenuItem value="CAMBODIAN">CAMBODIAN</MenuItem>
-                <MenuItem value="KOREAN">KOREAN</MenuItem>
-                <MenuItem value="KUWAITI">KUWAITI</MenuItem>
-                <MenuItem value="KENYAN">KENYAN</MenuItem>
-                <MenuItem value="LAOTIAN">LAOTIAN</MenuItem>
-                <MenuItem value="LEBANESE">LEBANESE</MenuItem>
-                <MenuItem value="LIBYAN">LIBYAN</MenuItem>
-                <MenuItem value="LUXEMBURGER">LUXEMBURGER</MenuItem>
-                <MenuItem value="MALAYSIAN">MALAYSIAN</MenuItem>
-                <MenuItem value="MOROCCAN">MOROCCAN</MenuItem>
-                <MenuItem value="MEXICAN">MEXICAN</MenuItem>
-                <MenuItem value="BURMESE">BURMESE</MenuItem>
-                <MenuItem value="MYANMAR">MYANMAR</MenuItem>
-                <MenuItem value="NIGERIAN">NIGERIAN</MenuItem>
-                <MenuItem value="NOT INDICATED">NOT INDICATED</MenuItem>
-                <MenuItem value="DUTCH">DUTCH</MenuItem>
-                <MenuItem value="NORWEGIAN">NORWEGIAN</MenuItem>
-                <MenuItem value="NEPALI">NEPALI</MenuItem>
-                <MenuItem value="NEW ZEALANDER">NEW ZEALANDER</MenuItem>
-                <MenuItem value="OMANI">OMANI</MenuItem>
-                <MenuItem value="PAKISTANI">PAKISTANI</MenuItem>
-                <MenuItem value="PANAMANIAN">PANAMANIAN</MenuItem>
-                <MenuItem value="PERUVIAN">PERUVIAN</MenuItem>
-                <MenuItem value="PAPUAN">PAPUAN</MenuItem>
-                <MenuItem value="POLISH">POLISH</MenuItem>
-                <MenuItem value="PUERTO RICAN">PUERTO RICAN</MenuItem>
-                <MenuItem value="PORTUGUESE">PORTUGUESE</MenuItem>
-                <MenuItem value="PARAGUAYAN">PARAGUAYAN</MenuItem>
-                <MenuItem value="PALESTINIAN">PALESTINIAN</MenuItem>
-                <MenuItem value="QATARI">QATARI</MenuItem>
-                <MenuItem value="ROMANIAN">ROMANIAN</MenuItem>
-                <MenuItem value="RUSSIAN">RUSSIAN</MenuItem>
-                <MenuItem value="RWANDAN">RWANDAN</MenuItem>
-                <MenuItem value="SAUDI ARABIAN">SAUDI ARABIAN</MenuItem>
-                <MenuItem value="SUDANESE">SUDANESE</MenuItem>
-                <MenuItem value="SINGAPOREAN">SINGAPOREAN</MenuItem>
-                <MenuItem value="SRI LANKAN">SRI LANKAN</MenuItem>
-                <MenuItem value="EL SALVADORIAN">EL SALVADORIAN</MenuItem>
-                <MenuItem value="SOMALIAN">SOMALIAN</MenuItem>
-                <MenuItem value="SLOVAK">SLOVAK</MenuItem>
-                <MenuItem value="SWEDISH">SWEDISH</MenuItem>
-                <MenuItem value="SWISS">SWISS</MenuItem>
-                <MenuItem value="SYRIAN">SYRIAN</MenuItem>
-                <MenuItem value="THAI">THAI</MenuItem>
-                <MenuItem value="TRINIDAD AND TOBAGO">TRINIDAD AND TOBAGO</MenuItem>
-                <MenuItem value="TUNISIAN">TUNISIAN</MenuItem>
-                <MenuItem value="TURKISH">TURKISH</MenuItem>
-                <MenuItem value="TAIWANESE">TAIWANESE</MenuItem>
-                <MenuItem value="UKRAINIAN">UKRAINIAN</MenuItem>
-                <MenuItem value="URUGUAYAN">URUGUAYAN</MenuItem>
-                <MenuItem value="UNITED STATES">UNITED STATES</MenuItem>
-                <MenuItem value="VENEZUELAN">VENEZUELAN</MenuItem>
-                <MenuItem value="VIRGIN ISLANDS">VIRGIN ISLANDS</MenuItem>
-                <MenuItem value="VIETNAMESE">VIETNAMESE</MenuItem>
-                <MenuItem value="YEMENI">YEMENI</MenuItem>
-                <MenuItem value="YUGOSLAVIAN">YUGOSLAVIAN</MenuItem>
-                <MenuItem value="SOUTH AFRICAN">SOUTH AFRICAN</MenuItem>
-                <MenuItem value="ZAIREAN">ZAIREAN</MenuItem>
-                <MenuItem value="ZIMBABWEAN">ZIMBABWEAN</MenuItem>
-                <MenuItem value="Others">Others</MenuItem>
-              </Select>
-            </FormControl>
+              {/* Religion Field */}
+              <FormControl sx={{ width: "50%" }} size="small" required>
+                <Typography style={{ fontSize: "12px", marginBottom: "5px" }}>
+                  Religion:
+                </Typography>
+                <Select
+                  value={student.religion || ""}
+                  onChange={(e) => {
+                    const updatedStudent = { ...student, religion: e.target.value };
+                    setStudents((prev) =>
+                      prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                    );
+                    updateItem(updatedStudent);
+                  }}
+                >
+                  <MenuItem value="">- Select Religion -</MenuItem>
+                  {[
+                    "Jehovah's Witness", "Buddist", "Catholic", "Dating Daan", "Pagano", "Atheist", "Born Again",
+                    "Adventis", "Baptist", "Mormons", "Free Methodist", "Christian", "Protestant", "Aglipay", "Islam",
+                    "LDS", "Seventh Day Adventist", "Iglesia Ni Cristo", "UCCP", "PMCC", "Baha'i Faith", "None", "Others"
+                  ].map((religion) => (
+                    <MenuItem key={religion} value={religion}>{religion}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+          ))}
 
 
 
 
-            <Typography style={{ fontSize: "12px", marginRight: "120px", textAlign: "Center" }}>
-              Religion:
-            </Typography>
-            <FormControl sx={{ width: "38%" }} size="small">
-              <InputLabel id="religion-label">Select Religion</InputLabel>
-              <Select
-                labelId="religion-label"
-                id="religion-select"
-                value={data[0]?.religion || ""}
-                label="Select Religion"
-                onChange={(e) =>
-                  setNewApplicant({ ...newApplicant, religion: e.target.value })
-                }
-              >
-                <MenuItem value="Religion">- religion -</MenuItem>
-                <MenuItem value="Jehovah's Witness">Jehovah's Witness</MenuItem>
-                <MenuItem value="Buddist">Buddist</MenuItem>
-                <MenuItem value="Catholic">Catholic</MenuItem>
-                <MenuItem value="Dating Daan">Dating Daan</MenuItem>
-                <MenuItem value="Pagano">Pagano</MenuItem>
-                <MenuItem value="Atheist">Atheist</MenuItem>
-                <MenuItem value="Born Again">Born Again</MenuItem>
-                <MenuItem value="Adventis">Adventis</MenuItem>
-                <MenuItem value="Baptist">Baptist</MenuItem>
-                <MenuItem value="Mormons">Mormons</MenuItem>
-                <MenuItem value="Free Methodist">Free Methodist</MenuItem>
-                <MenuItem value="Christian">Christian</MenuItem>
-                <MenuItem value="Protestant">Protestant</MenuItem>
-                <MenuItem value="Aglipay">Aglipay</MenuItem>
-                <MenuItem value="Islam">Islam</MenuItem>
-                <MenuItem value="LDS">LDS</MenuItem>
-                <MenuItem value="Seventh Day Adventist">Seventh Day Adventist</MenuItem>
-                <MenuItem value="Iglesia Ni Cristo">Iglesia Ni Cristo</MenuItem>
-                <MenuItem value="UCCP">UCCP</MenuItem>
-                <MenuItem value="PMCC">PMCC</MenuItem>
-                <MenuItem value="Baha'i Faith">Baha'i Faith</MenuItem>
-                <MenuItem value="None">None / No Religion</MenuItem>
-                <MenuItem value="Others">Others</MenuItem>
-              </Select>
-            </FormControl>
+
+          <Box display="flex" alignItems="center" gap={2} mb={2}>
+            {/* Civil Status */}
+
+            {students.map((student) => (
+              <FormControl sx={{ width: "33%" }} size="small" key={`civil-${student.person_id}`}>
+                <InputLabel id={`civil-status-label-${student.person_id}`}>Civil Status</InputLabel>
+                <Select
+                  labelId={`civil-status-label-${student.person_id}`}
+                  id={`civil-status-select-${student.person_id}`}
+                  value={student.civilStatus || ""}
+                  label="Civil Status"
+                  onChange={(e) => {
+                    const updatedCivilStatus = e.target.value;
+                    const updatedStudents = [...students];
+                    const studentIndex = updatedStudents.findIndex((s) => s.person_id === student.person_id);
+                    if (studentIndex !== -1) {
+                      updatedStudents[studentIndex] = { ...updatedStudents[studentIndex], civilStatus: updatedCivilStatus };
+                    }
+                    setStudents(updatedStudents);
+                    updateItem(updatedStudents[studentIndex]);
+                  }}
+                >
+                  <MenuItem value="-civil status-">- civil status -</MenuItem>
+                  <MenuItem value="Single">Single</MenuItem>
+                  <MenuItem value="Married">Married</MenuItem>
+                  <MenuItem value="Legally Seperated">Legally Seperated</MenuItem>
+                  <MenuItem value="Widowed">Widowed</MenuItem>
+                  <MenuItem value="Solo Parent">Solo Parent</MenuItem>
+                </Select>
+              </FormControl>
+            ))}
 
 
-          </Box>
-
-          <Box display="flex" alignItems="center" mb={2}>
-            <Typography style={{ fontSize: "12px", marginRight: "36px" }}>
-              Civil Status:
-            </Typography>
-            <FormControl sx={{ width: "40%" }} size="small">
-              <InputLabel id="civil-status-label">Civil Status</InputLabel>
-              <Select
-                labelId="civil-status-label"
-                id="civil-status-select"
-                value={data[0]?.civilStatus || ""}
-                label="Civil Status"
-
-                onChange={(e) =>
-                  setNewApplicant({ ...newApplicant, civilStatus: e.target.value })
-                }
-              >
-                <MenuItem value="-civil status-">-civil status-</MenuItem>
-                <MenuItem value="Single">Single</MenuItem>
-                <MenuItem value="Married">Married</MenuItem>
-                <MenuItem value="Legally Seperated">Legally Seperated</MenuItem>
-                <MenuItem value="Widowed">Widowed</MenuItem>
-                <MenuItem value="Solo Parent">Solo Parent</MenuItem>
-
-              </Select>
-            </FormControl>
 
 
-            <Typography style={{ marginLeft: "150px", fontSize: "12px", marginRight: "100px", textAlign: "Center" }}>
-              Tribe/Ethnic Group:
-            </Typography>
-            <FormControl sx={{ width: "20%" }} size="small">
-              <InputLabel id="ethnic-group-label">Select Tribe / Ethnic Group</InputLabel>
-              <Select
-                labelId="ethnic-group-label"
-                id="ethnic-group-select"
-                value={data[0]?.tribeEthnicGroup || ""}
-                label="Select Tribe / Ethnic Group"
-                onChange={(e) =>
-                  setNewApplicant({ ...newApplicant, tribeEthnicGroup: e.target.value })
-                }
-              >
-                <MenuItem value="Agta">Agta</MenuItem>
-                <MenuItem value="Agutaynen">Agutaynen</MenuItem>
-                <MenuItem value="Aklanon">Aklanon</MenuItem>
-                <MenuItem value="Alangan">Alangan</MenuItem>
-                <MenuItem value="Alta">Alta</MenuItem>
-                <MenuItem value="Amersian">Amersian</MenuItem>
-                <MenuItem value="Ati">Ati</MenuItem>
-                <MenuItem value="Atta">Atta</MenuItem>
-                <MenuItem value="Ayta">Ayta</MenuItem>
-                <MenuItem value="B'laan">B'laan</MenuItem>
-                <MenuItem value="Badjao">Badjao</MenuItem>
-                <MenuItem value="Bagobo">Bagobo</MenuItem>
-                <MenuItem value="Balangao">Balangao</MenuItem>
-                <MenuItem value="Balangingi">Balangingi</MenuItem>
-                <MenuItem value="Bangon">Bangon</MenuItem>
-                <MenuItem value="Bantoanon">Bantoanon</MenuItem>
-                <MenuItem value="Banwaon">Banwaon</MenuItem>
-                <MenuItem value="Batak">Batak</MenuItem>
-                <MenuItem value="Bicolano">Bicolano</MenuItem>
-                <MenuItem value="Binukid">Binukid</MenuItem>
-                <MenuItem value="Bohalano">Bohalano</MenuItem>
-                <MenuItem value="Bolinao">Bolinao</MenuItem>
-                <MenuItem value="Bontoc">Bontoc</MenuItem>
-                <MenuItem value="Buhid">Buhid</MenuItem>
-                <MenuItem value="Butuanon">Butuanon</MenuItem>
-                <MenuItem value="Cagyanen">Cagyanen</MenuItem>
-                <MenuItem value="Caray-a">Caray-a</MenuItem>
-                <MenuItem value="Cebuano">Cebuano</MenuItem>
-                <MenuItem value="Cuyunon">Cuyunon</MenuItem>
-                <MenuItem value="Dasen">Dasen</MenuItem>
-                <MenuItem value="Ilocano">Ilocano</MenuItem>
-                <MenuItem value="Ilonggo">Ilonggo</MenuItem>
-                <MenuItem value="Jamah Mapun">Jamah Mapun</MenuItem>
-                <MenuItem value="Malay">Malay</MenuItem>
-                <MenuItem value="Mangyan">Mangyan</MenuItem>
-                <MenuItem value="Maranao">Maranao</MenuItem>
-                <MenuItem value="Molbogs">Molbogs</MenuItem>
-                <MenuItem value="Palawano">Palawano</MenuItem>
-                <MenuItem value="Panimusan">Panimusan</MenuItem>
-                <MenuItem value="Tagbanua">Tagbanua</MenuItem>
-                <MenuItem value="Tao't">Tao't</MenuItem>
-                <MenuItem value="Bato">Bato</MenuItem>
-                <MenuItem value="Tausug">Tausug</MenuItem>
-                <MenuItem value="Waray">Waray</MenuItem>
-                <MenuItem value="None">None</MenuItem>
-                <MenuItem value="Others">Others</MenuItem>
-              </Select>
-            </FormControl>
+            {students.map((student) => (
+              <FormControl sx={{ width: "33%" }} size="small" key={student.person_id}>
+                <InputLabel id={`ethnic-group-label-${student.person_id}`}>Select Tribe / Ethnic Group</InputLabel>
+                <Select
+                  labelId={`ethnic-group-label-${student.person_id}`}
+                  id={`ethnic-group-select-${student.person_id}`}
+                  value={student.tribeEthnicGroup || ""}
+                  label="Select Tribe / Ethnic Group"
+                  onChange={(e) => {
+                    const updatedTribeEthnicGroup = e.target.value;
+                    const updatedStudents = [...students]; // Create a copy of the students array
+                    const studentIndex = updatedStudents.findIndex((s) => s.person_id === student.person_id);
 
-            <div style={{ marginRight: "17px" }}></div>
-            <TextField
-              label=""
-              required
-              style={{ width: "34%", }}
-              size="small"
+                    if (studentIndex !== -1) {
+                      updatedStudents[studentIndex] = { ...updatedStudents[studentIndex], tribeEthnicGroup: updatedTribeEthnicGroup };
+                    }
 
-            />
+                    // Update local state
+                    setStudents(updatedStudents);
+
+                    // Immediately update backend
+                    updateItem(updatedStudents[studentIndex]);
+                  }}
+                >
+                  <MenuItem value="Agta">Agta</MenuItem>
+                  <MenuItem value="Agutaynen">Agutaynen</MenuItem>
+                  <MenuItem value="Aklanon">Aklanon</MenuItem>
+                  <MenuItem value="Alangan">Alangan</MenuItem>
+                  <MenuItem value="Alta">Alta</MenuItem>
+                  <MenuItem value="Amersian">Amersian</MenuItem>
+                  <MenuItem value="Ati">Ati</MenuItem>
+                  <MenuItem value="Atta">Atta</MenuItem>
+                  <MenuItem value="Ayta">Ayta</MenuItem>
+                  <MenuItem value="B'laan">B'laan</MenuItem>
+                  <MenuItem value="Badjao">Badjao</MenuItem>
+                  <MenuItem value="Bagobo">Bagobo</MenuItem>
+                  <MenuItem value="Balangao">Balangao</MenuItem>
+                  <MenuItem value="Balangingi">Balangingi</MenuItem>
+                  <MenuItem value="Bangon">Bangon</MenuItem>
+                  <MenuItem value="Bantoanon">Bantoanon</MenuItem>
+                  <MenuItem value="Banwaon">Banwaon</MenuItem>
+                  <MenuItem value="Batak">Batak</MenuItem>
+                  <MenuItem value="Bicolano">Bicolano</MenuItem>
+                  <MenuItem value="Binukid">Binukid</MenuItem>
+                  <MenuItem value="Bohalano">Bohalano</MenuItem>
+                  <MenuItem value="Bolinao">Bolinao</MenuItem>
+                  <MenuItem value="Bontoc">Bontoc</MenuItem>
+                  <MenuItem value="Buhid">Buhid</MenuItem>
+                  <MenuItem value="Butuanon">Butuanon</MenuItem>
+                  <MenuItem value="Cagyanen">Cagyanen</MenuItem>
+                  <MenuItem value="Caray-a">Caray-a</MenuItem>
+                  <MenuItem value="Cebuano">Cebuano</MenuItem>
+                  <MenuItem value="Cuyunon">Cuyunon</MenuItem>
+                  <MenuItem value="Dasen">Dasen</MenuItem>
+                  <MenuItem value="Ilocano">Ilocano</MenuItem>
+                  <MenuItem value="Ilonggo">Ilonggo</MenuItem>
+                  <MenuItem value="Jamah Mapun">Jamah Mapun</MenuItem>
+                  <MenuItem value="Malay">Malay</MenuItem>
+                  <MenuItem value="Mangyan">Mangyan</MenuItem>
+                  <MenuItem value="Maranao">Maranao</MenuItem>
+                  <MenuItem value="Molbogs">Molbogs</MenuItem>
+                  <MenuItem value="Palawano">Palawano</MenuItem>
+                  <MenuItem value="Panimusan">Panimusan</MenuItem>
+                  <MenuItem value="Tagbanua">Tagbanua</MenuItem>
+                  <MenuItem value="Tao't">Tao't</MenuItem>
+                  <MenuItem value="Bato">Bato</MenuItem>
+                  <MenuItem value="Tausug">Tausug</MenuItem>
+                  <MenuItem value="Waray">Waray</MenuItem>
+                  <MenuItem value="None">None</MenuItem>
+                  <MenuItem value="Others">Others</MenuItem>
+                </Select>
+              </FormControl>
+            ))}
+
+            {students.map((student) => (
+
+              <TextField
+                key={`other-ethnic-${student.person_id}`}
+                label="Other Ethnic Group"
+                value={student.otherEthnicGroup || ""}
+                style={{ width: "33%" }}
+                size="small"
+                onChange={(e) => {
+                  const updatedOtherEthnicGroup = e.target.value;
+                  const updatedStudents = [...students];
+                  const studentIndex = updatedStudents.findIndex((s) => s.person_id === student.person_id);
+                  if (studentIndex !== -1) {
+                    updatedStudents[studentIndex] = {
+                      ...updatedStudents[studentIndex],
+                      otherEthnicGroup: updatedOtherEthnicGroup,
+                    };
+                  }
+
+                  setStudents(updatedStudents);
+                  updateItem(updatedStudents[studentIndex]);
+                }}
+              />
+            ))}
+
           </Box>
 
           <br />
@@ -1230,64 +1425,100 @@ const ApplicantForm = () => {
             Contact Information:
           </Typography>
           <hr style={{ border: "1px solid #ccc", width: "100%" }} />
-          <Box display="flex" gap={2}>
-            <Box width="50%">
-              <div>Cellphone Number: <span style={{ color: "red" }}>*</span></div><TextField
-                label="Enter Cellphone Number"
-                required
-                fullWidth
-                size="small"
-                value={data[0]?.cellphoneNumber || ""}
-                onChange={(e) =>
-                  setNewApplicant({ ...newApplicant, cellphoneNumber: e.target.value })
-                }
-              />
-            </Box>
+          {students.map((student) => (
+            <Box key={student.person_id} display="flex" gap={2} mb={2}>
+              {/* Cellphone Number Field */}
+              <Box width="50%">
+                <div>
+                  Cellphone Number: <span style={{ color: "red" }}>*</span>
+                </div>
+                <TextField
+                  label="Enter Cellphone Number"
+                  required
+                  fullWidth
+                  size="small"
+                  value={student.cellphoneNumber || ""}
+                  onChange={(e) => {
+                    const updatedStudent = { ...student, cellphoneNumber: e.target.value };
+                    setStudents((prev) =>
+                      prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                    );
+                    updateItem(updatedStudent);
+                  }}
+                />
+              </Box>
 
-            <Box width="50%">
-              <div>Email Address: <span style={{ color: "red" }}>*</span></div><TextField
-                label="Enter Email Address"
-                required
-                fullWidth
-                size="small"
-                value={data[0]?.emailAddress || ""}
-                onChange={(e) =>
-                  setNewApplicant({ ...newApplicant, emailAddress: e.target.value })
-                }
-              />
+              {/* Email Address Field */}
+              <Box width="50%">
+                <div>
+                  Email Address: <span style={{ color: "red" }}>*</span>
+                </div>
+                <TextField
+                  label="Enter Email Address"
+                  required
+                  fullWidth
+                  size="small"
+                  value={student.emailAddress || ""}
+                  onChange={(e) => {
+                    const updatedStudent = { ...student, emailAddress: e.target.value };
+                    setStudents((prev) =>
+                      prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                    );
+                    updateItem(updatedStudent);
+                  }}
+                />
+              </Box>
             </Box>
-          </Box>
+          ))}
 
 
-          <Box display="flex" gap={2} mt={1}>
-            <Box width="50%">
-              <div>Telephone Number: <span style={{ color: "red", }}>*</span></div>
-              <TextField
-                label="Enter Telephone Number"
-                required
-                sx={{ width: "100%", marginRight: "20px" }}
-                size="small"
-                value={data[0]?.telephoneNumber || ""}
-                onChange={(e) =>
-                  setNewApplicant({ ...newApplicant, telephoneNumber: e.target.value })
-                }
-              />
-            </Box>
 
-            <Box width="50%">
-              <div>Facebook Account: <span style={{ color: "red", }}>*</span></div>
-              <TextField
-                label="Enter Facebook Account"
-                required
-                sx={{ width: "100%", marginRight: "20px" }}
-                size="small"
-                value={data[0]?.facebookAccount || ""}
-                onChange={(e) =>
-                  setNewApplicant({ ...newApplicant, facebookAccount: e.target.value })
-                }
-              />
+          {students.map((student) => (
+            <Box key={student.person_id} display="flex" gap={2} mt={1}>
+              {/* Telephone Number Field */}
+              <Box width="50%">
+                <div>
+                  Telephone Number: <span style={{ color: "red" }}>*</span>
+                </div>
+                <TextField
+                  label="Enter Telephone Number"
+                  required
+                  fullWidth
+                  size="small"
+                  value={student.telephoneNumber || ""}
+                  onChange={(e) => {
+                    const updatedStudent = { ...student, telephoneNumber: e.target.value };
+                    setStudents((prev) =>
+                      prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                    );
+                    updateItem(updatedStudent);
+                  }}
+                />
+              </Box>
+
+              {/* Facebook Account Field */}
+              <Box width="50%">
+                <div>
+                  Facebook Account: <span style={{ color: "red" }}>*</span>
+                </div>
+                <TextField
+                  label="Enter Facebook Account"
+                  required
+                  fullWidth
+                  size="small"
+                  value={student.facebookAccount || ""}
+                  onChange={(e) => {
+                    const updatedStudent = { ...student, facebookAccount: e.target.value };
+                    setStudents((prev) =>
+                      prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                    );
+                    updateItem(updatedStudent);
+                  }}
+                />
+              </Box>
             </Box>
-          </Box>
+          ))}
+
           < br />
 
 
@@ -1725,6 +1956,23 @@ const ApplicantForm = () => {
               </Box>
             </Box>
           </Modal>
+
+          <FormControl fullWidth sx={{ m: 1 }}>
+            <InputLabel id="region1-municipality-label">Municipality/City</InputLabel>
+            <Select
+              labelId="region1-municipality-label"
+              id="region1-municipality-select"
+              value={selectedMunicipality}
+              label="Municipality/City"
+              onChange={(e) => setSelectedMunicipality(e.target.value)}
+            >
+              {region1Municipalities.map((name, index) => (
+                <MenuItem key={index} value={name}>
+                  {name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
 
 

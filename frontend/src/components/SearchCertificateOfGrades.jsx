@@ -284,7 +284,8 @@ const CourseTagging = () => {
                 width: 100%;
                 height: 100%;
                 box-sizing: border-box;
-                padding: 5; /* mimic full edge-to-edge layout */
+                margin: 2;
+                padding: 1; /* mimic full edge-to-edge layout */
               }
   
               * {

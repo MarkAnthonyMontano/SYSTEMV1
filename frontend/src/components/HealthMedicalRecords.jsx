@@ -33,7 +33,7 @@ const HealthMedicalRecords = () => {
   useEffect(() => {
     const fetchMedicalRecords = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/health_medical_records');
+        const response = await axios.get('http://localhost:5000/person_table');
         console.log('Fetched Data:', response.data);  // Log to see the raw data
         const filtered = response.data.filter(item => String(item.person_id) === String(personIDFromToken));
         setData(filtered);
@@ -46,7 +46,7 @@ const HealthMedicalRecords = () => {
   }, [personID]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/health_medical_records")
+    fetch("http://localhost:5000/person_table")
       .then(res => res.json())
       .then(data => setData(data))
       .catch(err => console.error(err));

@@ -38,7 +38,7 @@ const EducationalAttainment = () => {
   useEffect(() => {
     const fetchEducationalAttainment = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/educational_attainment');
+        const response = await axios.get('http://localhost:5000/person_table');
         console.log('Fetched Data:', response.data);  // Log to see the raw data
         const filtered = response.data.filter(item => String(item.person_id) === String(personIDFromToken));
         setData(filtered);
@@ -52,7 +52,7 @@ const EducationalAttainment = () => {
   }, [personID]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/educational_attainment")
+    fetch("http://localhost:5000/person_table")
       .then(res => res.json())
       .then(data => setData(data))
       .catch(err => console.error(err));
@@ -96,7 +96,7 @@ const EducationalAttainment = () => {
 
   const fetchEducationalAttainment = async () => {
     try {
-      const result = await axios.get("http://localhost:5000/educational_attainment");
+      const result = await axios.get("http://localhost:5000/person_table");
 
     } catch (error) {
       console.error("Error fetching Educational Attainment:", error);

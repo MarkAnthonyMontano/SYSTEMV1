@@ -245,18 +245,17 @@ app.delete("/applicant-requirements/:id", (req, res) => {
 });
 
 // GET STUDENT APPLICANT
-app.get("/person_table", async (req, res) => {
+app.get("/personal_information", async (req, res) => {
   try {
-    const [results] = await db.query("SELECT * FROM person_table");
+    const [results] = await pool.query("SELECT * FROM personal_information");
     res.status(200).send(results);
   } catch (error) {
     res.status(500).send({ message: "Error fetching Personal Information", error });
   }
 });
 
-// POST STUDENT APPLICANT
-app.post("/person_table", async (req, res) => {
-  const { 
+app.post("/personal_information", async (req, res) => {
+  const {
     profile_picture, campus, academicProgram, classifiedAs, program, yearLevel,
     lastName, firstName, middleName, extension, nickname, height, weight,
     lrnNumber, gender, pwdType, pwdId, birthOfDate, age, birthPlace,
@@ -265,27 +264,11 @@ app.post("/person_table", async (req, res) => {
     presentStreet, presentBarangay, presentZipCode, presentRegion,
     presentProvince, presentMunicipality, presentDswdHouseholdNumber,
     permanentStreet, permanentBarangay, permanentZipCode, permanentRegion,
-    permanentProvince, permanentMunicipality, permanentDswdHouseholdNumber,
-    solo_parent, father_deceased, father_family_name, father_given_name,
-    father_middle_name, father_ext, father_nickname, father_education_level,
-    father_last_school, father_course, father_year_graduated, father_school_address,
-    father_contact, father_occupation, father_employer, father_income, father_email,
-    mother_deceased, mother_family_name, mother_given_name, mother_middle_name,
-    mother_nickname, mother_education_level, mother_last_school, mother_course,
-    mother_year_graduated, mother_school_address, mother_contact, mother_occupation,
-    mother_employer, mother_income, mother_email, guardian,
-    guardian_family_name, guardian_given_name, guardian_middle_name, guardian_ext,
-    guardian_nickname, guardian_address, guardian_contact, guardian_email,
-    annual_income, schoolLevel, schoolLastAttended, schoolAddress, courseProgram,
-    honor, generalAverage, yearGraduated, strand, cough, colds, fever, asthma, fainting, heartDisease, tuberculosis, frequentheadaches,
-    hernia, chronicCough, headNeckInjury, hiv, highBloodPressure, diabetesMellitus, allergies, cancer,
-    smoking, alcoholDrinking, hospitalized, hospitalizationDetails, medications, hadCovid, covidDate,
-    vaccine1Brand, vaccine1Date, vaccine2Brand, vaccine2Date, booster1Brand, booster1Date, booster2Brand,
-    booster2Date, chestXray, cbc, urinalysis, otherworkups, symptomsToday, remarks
+    permanentProvince, permanentMunicipality, permanentDswdHouseholdNumber
   } = req.body;
 
   const query = `
-    INSERT INTO person_table (
+    INSERT INTO personal_information (
       profile_picture, campus, academicProgram, classifiedAs, program, yearLevel,
       lastName, firstName, middleName, extension, nickname, height, weight,
       lrnNumber, gender, pwdType, pwdId, birthOfDate, age, birthPlace,
@@ -294,28 +277,12 @@ app.post("/person_table", async (req, res) => {
       presentStreet, presentBarangay, presentZipCode, presentRegion,
       presentProvince, presentMunicipality, presentDswdHouseholdNumber,
       permanentStreet, permanentBarangay, permanentZipCode, permanentRegion,
-      permanentProvince, permanentMunicipality, permanentDswdHouseholdNumber,
-      solo_parent, father_deceased, father_family_name, father_given_name,
-      father_middle_name, father_ext, father_nickname, father_education_level,
-      father_last_school, father_course, father_year_graduated, father_school_address,
-      father_contact, father_occupation, father_employer, father_income, father_email,
-      mother_deceased, mother_family_name, mother_given_name, mother_middle_name,
-      mother_nickname, mother_education_level, mother_last_school, mother_course,
-      mother_year_graduated, mother_school_address, mother_contact, mother_occupation,
-      mother_employer, mother_income, mother_email, guardian,
-      guardian_family_name, guardian_given_name, guardian_middle_name, guardian_ext,
-      guardian_nickname, guardian_address, guardian_contact, guardian_email,
-      annual_income, schoolLevel, schoolLastAttended, schoolAddress, courseProgram,
-      honor, generalAverage, yearGraduated, strand, cough, colds, fever, asthma, fainting, heartDisease, tuberculosis, frequentheadaches,
-      hernia, chronicCough, headNeckInjury, hiv, highBloodPressure, diabetesMellitus, allergies, cancer,
-      smoking, alcoholDrinking, hospitalized, hospitalizationDetails, medications, hadCovid, covidDate,
-      vaccine1Brand, vaccine1Date, vaccine2Brand, vaccine2Date, booster1Brand, booster1Date, booster2Brand,
-      booster2Date, chestXray, cbc, urinalysis, otherworkups, symptomsToday, remarks
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      permanentProvince, permanentMunicipality, permanentDswdHouseholdNumber
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   try {
-    const [result] = await db.query(query, [
+    const [result] = await pool.query(query, [
       profile_picture, campus, academicProgram, classifiedAs, program, yearLevel,
       lastName, firstName, middleName, extension, nickname, height, weight,
       lrnNumber, gender, pwdType, pwdId, birthOfDate, age, birthPlace,
@@ -324,23 +291,7 @@ app.post("/person_table", async (req, res) => {
       presentStreet, presentBarangay, presentZipCode, presentRegion,
       presentProvince, presentMunicipality, presentDswdHouseholdNumber,
       permanentStreet, permanentBarangay, permanentZipCode, permanentRegion,
-      permanentProvince, permanentMunicipality, permanentDswdHouseholdNumber,
-      solo_parent, father_deceased, father_family_name, father_given_name,
-      father_middle_name, father_ext, father_nickname, father_education_level,
-      father_last_school, father_course, father_year_graduated, father_school_address,
-      father_contact, father_occupation, father_employer, father_income, father_email,
-      mother_deceased, mother_family_name, mother_given_name, mother_middle_name,
-      mother_nickname, mother_education_level, mother_last_school, mother_course,
-      mother_year_graduated, mother_school_address, mother_contact, mother_occupation,
-      mother_employer, mother_income, mother_email, guardian,
-      guardian_family_name, guardian_given_name, guardian_middle_name, guardian_ext,
-      guardian_nickname, guardian_address, guardian_contact, guardian_email,
-      annual_income, schoolLevel, schoolLastAttended, schoolAddress, courseProgram,
-      honor, generalAverage, yearGraduated, strand, cough, colds, fever, asthma, fainting, heartDisease, tuberculosis, frequentheadaches,
-      hernia, chronicCough, headNeckInjury, hiv, highBloodPressure, diabetesMellitus, allergies, cancer,
-      smoking, alcoholDrinking, hospitalized, hospitalizationDetails, medications, hadCovid, covidDate,
-      vaccine1Brand, vaccine1Date, vaccine2Brand, vaccine2Date, booster1Brand, booster1Date, booster2Brand,
-      booster2Date, chestXray, cbc, urinalysis, otherworkups, symptomsToday, remarks
+      permanentProvince, permanentMunicipality, permanentDswdHouseholdNumber
     ]);
 
     res.status(201).send({ message: "Personal information created", person_id: result.insertId });
@@ -349,9 +300,7 @@ app.post("/person_table", async (req, res) => {
   }
 });
 
-
-// UPDATE THE ADMISSION
-app.put("/person_table/:person_id", (req, res) => {
+app.put("/personal_information/:person_id", async (req, res) => {
   const { person_id } = req.params;
 
   const {
@@ -359,11 +308,124 @@ app.put("/person_table/:person_id", (req, res) => {
     lastName, firstName, middleName, extension, nickname, height, weight,
     lrnNumber, gender, pwdType, pwdId, birthOfDate, age, birthPlace,
     languageDialectSpoken, citizenship, religion, civilStatus, tribeEthnicGroup,
-    otherEthnicGroup, cellphoneNumber, emailAddress, telephoneNumber, facebookAccount,
+    cellphoneNumber, emailAddress, telephoneNumber, facebookAccount,
     presentStreet, presentBarangay, presentZipCode, presentRegion,
     presentProvince, presentMunicipality, presentDswdHouseholdNumber,
     permanentStreet, permanentBarangay, permanentZipCode, permanentRegion,
-    permanentProvince, permanentMunicipality, permanentDswdHouseholdNumber,
+    permanentProvince, permanentMunicipality, permanentDswdHouseholdNumber
+  } = req.body;
+
+  const query = `
+    UPDATE personal_information SET
+      profile_picture = ?, campus = ?, academicProgram = ?, classifiedAs = ?, program = ?, yearLevel = ?,
+      lastName = ?, firstName = ?, middleName = ?, extension = ?, nickname = ?, height = ?, weight = ?,
+      lrnNumber = ?, gender = ?, pwdType = ?, pwdId = ?, birthOfDate = ?, age = ?, birthPlace = ?,
+      languageDialectSpoken = ?, citizenship = ?, religion = ?, civilStatus = ?, tribeEthnicGroup = ?,
+      cellphoneNumber = ?, emailAddress = ?, telephoneNumber = ?, facebookAccount = ?,
+      presentStreet = ?, presentBarangay = ?, presentZipCode = ?, presentRegion = ?,
+      presentProvince = ?, presentMunicipality = ?, presentDswdHouseholdNumber = ?,
+      permanentStreet = ?, permanentBarangay = ?, permanentZipCode = ?, permanentRegion = ?,
+      permanentProvince = ?, permanentMunicipality = ?, permanentDswdHouseholdNumber = ?
+    WHERE person_id = ?
+  `;
+
+  try {
+    await pool.query(query, [
+      profile_picture, campus, academicProgram, classifiedAs, program, yearLevel,
+      lastName, firstName, middleName, extension, nickname, height, weight,
+      lrnNumber, gender, pwdType, pwdId, birthOfDate, age, birthPlace,
+      languageDialectSpoken, citizenship, religion, civilStatus, tribeEthnicGroup,
+      cellphoneNumber, emailAddress, telephoneNumber, facebookAccount,
+      presentStreet, presentBarangay, presentZipCode, presentRegion,
+      presentProvince, presentMunicipality, presentDswdHouseholdNumber,
+      permanentStreet, permanentBarangay, permanentZipCode, permanentRegion,
+      permanentProvince, permanentMunicipality, permanentDswdHouseholdNumber,
+      person_id
+    ]);
+    res.status(200).send({ message: "Personal information updated" });
+  } catch (error) {
+    res.status(500).send({ message: "Error updating personal information", error });
+  }
+});
+
+app.delete("/personal_information/:person_id", async (req, res) => {
+  const { person_id } = req.params;
+
+  try {
+    await pool.query("DELETE FROM personal_information WHERE person_id = ?", [person_id]);
+    res.status(200).send({ message: "Personal information deleted" });
+  } catch (error) {
+    res.status(500).send({ message: "Error deleting personal information", error });
+  }
+});
+
+
+// GET STUDENT FAMILY BACKGROUND
+app.get("/family_background", async (req, res) => {
+  try {
+    const [results] = await pool.query("SELECT * FROM family_background");
+    res.status(200).send(results);
+  } catch (error) {
+    res.status(500).send({ message: "Error fetching family background", error });
+  }
+});
+// FAMILY BACKGROUND PANEL FORM
+app.post("/family_background", async (req, res) => {
+  const {
+    person_id, solo_parent, father_deceased, father_family_name, father_given_name,
+    father_middle_name, father_ext, father_nickname, father_education_level,
+    father_last_school, father_course, father_year_graduated, father_school_address,
+    father_contact, father_occupation, father_employer, father_income, father_email,
+    mother_deceased, mother_family_name, mother_given_name, mother_middle_name,
+    mother_nickname, mother_education_level, mother_last_school, mother_course,
+    mother_year_graduated, mother_school_address, mother_contact, mother_occupation,
+    mother_employer, mother_income, mother_email, guardian,
+    guardian_family_name, guardian_given_name, guardian_middle_name, guardian_ext,
+    guardian_nickname, guardian_address, guardian_contact, guardian_email,
+    annual_income,
+  } = req.body;
+
+  const query = `
+    INSERT INTO family_background (
+      person_id, solo_parent, father_deceased, father_family_name, father_given_name,
+      father_middle_name, father_ext, father_nickname, father_education_level,
+      father_last_school, father_course, father_year_graduated, father_school_address,
+      father_contact, father_occupation, father_employer, father_income, father_email,
+      mother_deceased, mother_family_name, mother_given_name, mother_middle_name,
+      mother_nickname, mother_education_level, mother_last_school, mother_course,
+      mother_year_graduated, mother_school_address, mother_contact, mother_occupation,
+      mother_employer, mother_income, mother_email, guardian,
+      guardian_family_name, guardian_given_name, guardian_middle_name, guardian_ext,
+      guardian_nickname, guardian_address, guardian_contact, guardian_email,
+      annual_income
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  try {
+    const [result] = await pool.query(query, [
+      person_id, solo_parent, father_deceased, father_family_name, father_given_name,
+      father_middle_name, father_ext, father_nickname, father_education_level,
+      father_last_school, father_course, father_year_graduated, father_school_address,
+      father_contact, father_occupation, father_employer, father_income, father_email,
+      mother_deceased, mother_family_name, mother_given_name, mother_middle_name,
+      mother_nickname, mother_education_level, mother_last_school, mother_course,
+      mother_year_graduated, mother_school_address, mother_contact, mother_occupation,
+      mother_employer, mother_income, mother_email, guardian,
+      guardian_family_name, guardian_given_name, guardian_middle_name, guardian_ext,
+      guardian_nickname, guardian_address, guardian_contact, guardian_email,
+      annual_income
+    ]);
+
+    res.status(201).send({ message: "Family background created", person_id });
+  } catch (error) {
+    res.status(500).send({ message: "Error creating family background", error });
+  }
+});
+
+// UPDATE STUDENT FAMILY BACKGROUND
+app.put("/family_background/:person_id", async (req, res) => {
+  const { person_id } = req.params;
+  const {
     solo_parent, father_deceased, father_family_name, father_given_name,
     father_middle_name, father_ext, father_nickname, father_education_level,
     father_last_school, father_course, father_year_graduated, father_school_address,
@@ -374,25 +436,11 @@ app.put("/person_table/:person_id", (req, res) => {
     mother_employer, mother_income, mother_email, guardian,
     guardian_family_name, guardian_given_name, guardian_middle_name, guardian_ext,
     guardian_nickname, guardian_address, guardian_contact, guardian_email,
-    annual_income, schoolLevel, schoolLastAttended, schoolAddress, courseProgram,
-    honor, generalAverage, yearGraduated, strand, cough, colds, fever, asthma, faintingSpells, heartDisease, tuberculosis, frequentheadaches,
-    hernia, chronicCough, headNeckInjury, hiv, highBloodPressure, diabetesMellitus, allergies, cancer,
-    smokingCigarette, alcoholDrinking, hospitalized, hospitalizationDetails, medications, hadCovid, covidDate,
-    vaccine1Brand, vaccine1Date, vaccine2Brand, vaccine2Date, booster1Brand, booster1Date, booster2Brand,
-    booster2Date, chestXray, cbc, urinalysis, otherworkups, symptomsToday, remarks
+    annual_income,
   } = req.body;
 
-  const updateQuery = `
-    UPDATE person_table SET
-      profile_picture = ?, campus = ?, academicProgram = ?, classifiedAs = ?, program = ?, yearLevel = ?,
-      lastName = ?, firstName = ?, middleName = ?, extension = ?, nickname = ?, height = ?, weight = ?,
-      lrnNumber = ?, gender = ?, pwdType = ?, pwdId = ?, birthOfDate = ?, age = ?, birthPlace = ?,
-      languageDialectSpoken = ?, citizenship = ?, religion = ?, civilStatus = ?, tribeEthnicGroup = ?,
-      otherEthnicGroup = ?, cellphoneNumber = ?, emailAddress = ?, telephoneNumber = ?, facebookAccount = ?,
-      presentStreet = ?, presentBarangay = ?, presentZipCode = ?, presentRegion = ?,
-      presentProvince = ?, presentMunicipality = ?, presentDswdHouseholdNumber = ?,
-      permanentStreet = ?, permanentBarangay = ?, permanentZipCode = ?, permanentRegion = ?,
-      permanentProvince = ?, permanentMunicipality = ?, permanentDswdHouseholdNumber = ?,
+  const query = `
+    UPDATE family_background SET
       solo_parent = ?, father_deceased = ?, father_family_name = ?, father_given_name = ?,
       father_middle_name = ?, father_ext = ?, father_nickname = ?, father_education_level = ?,
       father_last_school = ?, father_course = ?, father_year_graduated = ?, father_school_address = ?,
@@ -403,71 +451,240 @@ app.put("/person_table/:person_id", (req, res) => {
       mother_employer = ?, mother_income = ?, mother_email = ?, guardian = ?,
       guardian_family_name = ?, guardian_given_name = ?, guardian_middle_name = ?, guardian_ext = ?,
       guardian_nickname = ?, guardian_address = ?, guardian_contact = ?, guardian_email = ?,
-      annual_income = ?, schoolLevel = ?, schoolLastAttended = ?, schoolAddress = ?, courseProgram = ?,
-      honor = ?, generalAverage = ?, yearGraduated = ?, strand = ?, cough = ?, colds = ?, fever = ?,
-      asthma = ?, faintingSpells = ?, heartDisease = ?, tuberculosis = ?, frequentheadaches = ?,
-      hernia = ?, chronicCough = ?, headNeckInjury = ?, hiv = ?, highBloodPressure = ?,
-      diabetesMellitus = ?, allergies = ?, cancer = ?, smokingCigarette = ?, alcoholDrinking = ?, hospitalized = ?,
-      hospitalizationDetails = ?, medications = ?, hadCovid = ?, covidDate = ?, vaccine1Brand = ?,
-      vaccine1Date = ?, vaccine2Brand = ?, vaccine2Date = ?, booster1Brand = ?, booster1Date = ?,
-      booster2Brand = ?, booster2Date = ?, chestXray = ?, cbc = ?, urinalysis = ?, otherworkups = ?,
-      symptomsToday = ?, remarks = ?
+      annual_income = ?
     WHERE person_id = ?
   `;
 
-  const values = [
-    profile_picture, campus, academicProgram, classifiedAs, program, yearLevel,
-    lastName, firstName, middleName, extension, nickname, height, weight,
-    lrnNumber, gender, pwdType, pwdId, birthOfDate, age, birthPlace,
-    languageDialectSpoken, citizenship, religion, civilStatus, tribeEthnicGroup,
-    otherEthnicGroup, cellphoneNumber, emailAddress, telephoneNumber, facebookAccount,
-    presentStreet, presentBarangay, presentZipCode, presentRegion,
-    presentProvince, presentMunicipality, presentDswdHouseholdNumber,
-    permanentStreet, permanentBarangay, permanentZipCode, permanentRegion,
-    permanentProvince, permanentMunicipality, permanentDswdHouseholdNumber,
-    solo_parent, father_deceased, father_family_name, father_given_name,
-    father_middle_name, father_ext, father_nickname, father_education_level,
-    father_last_school, father_course, father_year_graduated, father_school_address,
-    father_contact, father_occupation, father_employer, father_income, father_email,
-    mother_deceased, mother_family_name, mother_given_name, mother_middle_name,
-    mother_nickname, mother_education_level, mother_last_school, mother_course,
-    mother_year_graduated, mother_school_address, mother_contact, mother_occupation,
-    mother_employer, mother_income, mother_email, guardian,
-    guardian_family_name, guardian_given_name, guardian_middle_name, guardian_ext,
-    guardian_nickname, guardian_address, guardian_contact, guardian_email,
-    annual_income, schoolLevel, schoolLastAttended, schoolAddress, courseProgram,
-    honor, generalAverage, yearGraduated, strand, cough, colds, fever, asthma, faintingSpells, heartDisease, tuberculosis, frequentheadaches,
-    hernia, chronicCough, headNeckInjury, hiv, highBloodPressure, diabetesMellitus, allergies, cancer,
-    smokingCigarette, alcoholDrinking, hospitalized, hospitalizationDetails, medications, hadCovid, covidDate,
-    vaccine1Brand, vaccine1Date, vaccine2Brand, vaccine2Date, booster1Brand, booster1Date, booster2Brand,
-    booster2Date, chestXray, cbc, urinalysis, otherworkups, symptomsToday, remarks,
-    person_id
-  ];
-
-  db.query(updateQuery, values, (err, result) => {
-    if (err) return res.status(500).json({ error: err.message });
-
-    // After update, fetch the updated record
-    db.query("SELECT * FROM person_table WHERE person_id = ?", [person_id], (err2, results) => {
-      if (err2) return res.status(500).json({ error: err2.message });
-      res.json(results[0]); // Return the updated student object
-    });
-  });
+  try {
+    await pool.query(query, [
+      solo_parent, father_deceased, father_family_name, father_given_name,
+      father_middle_name, father_ext, father_nickname, father_education_level,
+      father_last_school, father_course, father_year_graduated, father_school_address,
+      father_contact, father_occupation, father_employer, father_income, father_email,
+      mother_deceased, mother_family_name, mother_given_name, mother_middle_name,
+      mother_nickname, mother_education_level, mother_last_school, mother_course,
+      mother_year_graduated, mother_school_address, mother_contact, mother_occupation,
+      mother_employer, mother_income, mother_email, guardian,
+      guardian_family_name, guardian_given_name, guardian_middle_name, guardian_ext,
+      guardian_nickname, guardian_address, guardian_contact, guardian_email,
+      annual_income,
+      person_id
+    ]);
+    res.status(200).send({ message: "Family background updated" });
+  } catch (error) {
+    res.status(500).send({ message: "Error updating family background", error });
+  }
 });
 
 
-
-// Application Delete
-app.delete("/person_table/:person_id", async (req, res) => {
+// DELETE STUDENT FAMILY BACKGROUND
+app.delete("/family_background/:person_id", async (req, res) => {
   const { person_id } = req.params;
 
   try {
-    await db.query("DELETE FROM person_table WHERE person_id = ?", [person_id]);
-    res.status(200).send({ message: "Personal information deleted" });
+    await pool.query("DELETE FROM family_background WHERE person_id = ?", [person_id]);
+    res.status(200).send({ message: "Family background deleted" });
   } catch (error) {
-    res.status(500).send({ message: "Error deleting personal information", error });
+    res.status(500).send({ message: "Error deleting family background", error });
   }
 });
+
+// GET STUDENT EDUCATIONAL ATTAINMENT
+app.get("/educational_attainment", async (req, res) => {
+  try {
+    const [results] = await pool.query("SELECT * FROM educational_attainment");
+    res.status(200).send(results);
+  } catch (error) {
+    res.status(500).send({ message: "Error fetching educational attainment", error });
+  }
+});
+
+app.post("/educational_attainment", async (req, res) => {
+  const {
+    person_id, schoolLevel, schoolLastAttended, schoolAddress, courseProgram,
+    honor, generalAverage, yearGraduated, strand,
+  } = req.body;
+
+  const query = `
+    INSERT INTO educational_attainment (
+      person_id, schoolLevel, schoolLastAttended, schoolAddress, 
+      courseProgram, honor, generalAverage, yearGraduated, strand
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  try {
+    const [result] = await pool.query(query, [
+      person_id, schoolLevel, schoolLastAttended, schoolAddress, courseProgram,
+      honor, generalAverage, yearGraduated, strand,
+    ]);
+    res.status(201).send({ message: "Educational attainment created", person_id });
+  } catch (error) {
+    res.status(500).send({ message: "Error creating educational attainment", error });
+  }
+});
+
+app.post("/educational_attainment", async (req, res) => {
+  const {
+    person_id, schoolLevel, schoolLastAttended, schoolAddress, courseProgram,
+    honor, generalAverage, yearGraduated, strand,
+  } = req.body;
+
+  const query = `
+    INSERT INTO educational_attainment (
+      person_id, schoolLevel, schoolLastAttended, schoolAddress, 
+      courseProgram, honor, generalAverage, yearGraduated, strand
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  try {
+    const [result] = await pool.query(query, [
+      person_id, schoolLevel, schoolLastAttended, schoolAddress, courseProgram,
+      honor, generalAverage, yearGraduated, strand,
+    ]);
+    res.status(201).send({ message: "Educational attainment created", person_id });
+  } catch (error) {
+    res.status(500).send({ message: "Error creating educational attainment", error });
+  }
+});
+
+
+// UPDATE STUDENT'S EDUCATIONAL ATTAINMENT
+app.put("/educational_attainment/:person_id", async (req, res) => {
+  const { person_id } = req.params;
+
+  const {
+    schoolLevel, schoolLastAttended, schoolAddress, courseProgram,
+    honor, generalAverage, yearGraduated, strand,
+  } = req.body;
+
+  const query = `
+    UPDATE educational_attainment SET
+      schoolLevel = ?, schoolLastAttended = ?, schoolAddress = ?, 
+      courseProgram = ?, honor = ?, generalAverage = ?, 
+      yearGraduated = ?, strand = ?
+    WHERE person_id = ?
+  `;
+
+  try {
+    await pool.query(query, [
+      schoolLevel, schoolLastAttended, schoolAddress, courseProgram,
+      honor, generalAverage, yearGraduated, strand, person_id,
+    ]);
+    res.status(200).send({ message: "Educational attainment updated" });
+  } catch (error) {
+    res.status(500).send({ message: "Error updating educational attainment", error });
+  }
+});
+
+
+// DELETE STUDENT'S EDUCATIONAL ATTAINMENT
+app.delete("/educational_attainment/:person_id", async (req, res) => {
+  const { person_id } = req.params;
+
+  try {
+    await pool.query("DELETE FROM educational_attainment WHERE person_id = ?", [person_id]);
+    res.status(200).send({ message: "Educational attainment deleted" });
+  } catch (error) {
+    res.status(500).send({ message: "Error deleting educational attainment", error });
+  }
+});
+
+// GET HEALTH MEDICAL RECORDS
+app.get("/health_medical_records", async (req, res) => {
+  try {
+    const [results] = await pool.query("SELECT * FROM health_medical_records");
+    res.status(200).send(results);
+  } catch (error) {
+    res.status(500).send({ message: "Error fetching health medical records", error });
+  }
+});
+
+
+// CREATE HEALTH MEDICAL RECORDS
+app.post("/health_medical_records", async (req, res) => {
+  const {
+    person_id, cough, colds, fever, asthma, fainting, heartDisease, tuberculosis, frequentheadaches,
+    hernia, chronicCough, headNeckInjury, hiv, highBloodPressure, diabetesMellitus, allergies, cancer,
+    smoking, alcoholDrinking, hospitalized, hospitalizationDetails, medications, hadCovid, covidDate,
+    vaccine1Brand, vaccine1Date, vaccine2Brand, vaccine2Date, booster1Brand, booster1Date, booster2Brand,
+    booster2Date, chestXray, cbc, urinalysis, otherworkups, symptomsToday, remarks
+  } = req.body;
+
+  const query = `
+    INSERT INTO health_medical_records (
+      person_id, cough, colds, fever, asthma, fainting, heartDisease, tuberculosis, frequentheadaches,
+      hernia, chronicCough, headNeckInjury, hiv, highBloodPressure, diabetesMellitus, allergies, cancer,
+      smoking, alcoholDrinking, hospitalized, hospitalizationDetails, medications, hadCovid, covidDate,
+      vaccine1Brand, vaccine1Date, vaccine2Brand, vaccine2Date, booster1Brand, booster1Date, booster2Brand,
+      booster2Date, chestXray, cbc, urinalysis, otherworkups, symptomsToday, remarks
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  try {
+    const [result] = await pool.query(query, [
+      person_id, cough, colds, fever, asthma, fainting, heartDisease, tuberculosis, frequentheadaches,
+      hernia, chronicCough, headNeckInjury, hiv, highBloodPressure, diabetesMellitus, allergies, cancer,
+      smoking, alcoholDrinking, hospitalized, hospitalizationDetails, medications, hadCovid, covidDate,
+      vaccine1Brand, vaccine1Date, vaccine2Brand, vaccine2Date, booster1Brand, booster1Date, booster2Brand,
+      booster2Date, chestXray, cbc, urinalysis, otherworkups, symptomsToday, remarks
+    ]);
+    res.status(201).send({ message: "Health medical record created", person_id });
+  } catch (error) {
+    res.status(500).send({ message: "Error creating health medical record", error });
+  }
+});
+
+
+// UPDATE HEALTH MEDICAL RECORDS
+app.put("/health_medical_records/:person_id", async (req, res) => {
+  const { person_id } = req.params;
+
+  const {
+    cough, colds, fever, asthma, fainting, heartDisease, tuberculosis, frequentheadaches,
+    hernia, chronicCough, headNeckInjury, hiv, highBloodPressure, diabetesMellitus, allergies, cancer,
+    smoking, alcoholDrinking, hospitalized, hospitalizationDetails, medications, hadCovid, covidDate,
+    vaccine1Brand, vaccine1Date, vaccine2Brand, vaccine2Date, booster1Brand, booster1Date, booster2Brand,
+    booster2Date, chestXray, cbc, urinalysis, otherworkups, symptomsToday, remarks
+  } = req.body;
+
+  const query = `
+    UPDATE health_medical_records SET
+      cough = ?, colds = ?, fever = ?, asthma = ?, fainting = ?, heartDisease = ?, tuberculosis = ?, frequentheadaches = ?,
+      hernia = ?, chronicCough = ?, headNeckInjury = ?, hiv = ?, highBloodPressure = ?, diabetesMellitus = ?, allergies = ?, cancer = ?,
+      smoking = ?, alcoholDrinking = ?, hospitalized = ?, hospitalizationDetails = ?, medications = ?, hadCovid = ?, covidDate = ?,
+      vaccine1Brand = ?, vaccine1Date = ?, vaccine2Brand = ?, vaccine2Date = ?, booster1Brand = ?, booster1Date = ?, booster2Brand = ?,
+      booster2Date = ?, chestXray = ?, cbc = ?, urinalysis = ?, otherworkups = ?, symptomsToday = ?, remarks = ?
+    WHERE person_id = ?
+  `;
+
+  try {
+    await pool.query(query, [
+      cough, colds, fever, asthma, fainting, heartDisease, tuberculosis, frequentheadaches,
+      hernia, chronicCough, headNeckInjury, hiv, highBloodPressure, diabetesMellitus, allergies, cancer,
+      smoking, alcoholDrinking, hospitalized, hospitalizationDetails, medications, hadCovid, covidDate,
+      vaccine1Brand, vaccine1Date, vaccine2Brand, vaccine2Date, booster1Brand, booster1Date, booster2Brand,
+      booster2Date, chestXray, cbc, urinalysis, otherworkups, symptomsToday, remarks, person_id
+    ]);
+    res.status(200).send({ message: "Health medical record updated" });
+  } catch (error) {
+    res.status(500).send({ message: "Error updating health medical record", error });
+  }
+});
+
+// DELETE HEALTH MEDICAL RECORDS
+app.delete("/health_medical_records/:person_id", async (req, res) => {
+  const { person_id } = req.params;
+
+  try {
+    await pool.query("DELETE FROM health_medical_records WHERE person_id = ?", [person_id]);
+    res.status(200).send({ message: "Health medical record deleted" });
+  } catch (error) {
+    res.status(500).send({ message: "Error deleting health medical record", error });
+  }
+});
+
+
+
 
 // GET STUDENT PROFILE INFORMATION
 app.get('/student_profile_table', (req, res) => {

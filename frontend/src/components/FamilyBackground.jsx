@@ -37,7 +37,7 @@ const FamilyBackground = () => {
   useEffect(() => {
     const fetchFamilyBackground = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/family_background');
+        const response = await axios.get('http://localhost:5000/person_table');
         console.log('Fetched Family Background Data:', response.data);
         const filtered = response.data.filter(item => String(item.person_id) === String(personIDFromToken));
         setData(filtered);
@@ -50,7 +50,7 @@ const FamilyBackground = () => {
   }, [personID]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/family_background")
+    fetch("http://localhost:5000/person_table")
       .then(res => res.json())
       .then(data => setData(data))
       .catch(err => console.error("Error in fallback fetch:", err));
@@ -175,7 +175,7 @@ const FamilyBackground = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:5000/family_background", formData);
+      await axios.post("http://localhost:5000/person_table", formData);
       alert("Data submitted successfully!");
       setFormData({
         solo_parent: "",
