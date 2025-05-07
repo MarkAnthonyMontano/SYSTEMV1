@@ -19,6 +19,8 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { jwtDecode } from "jwt-decode";
 
+const API_URL = "http://localhost:5000/person_table";
+
 const EducationalAttainment = () => {
   const getPersonIdFromToken = () => {
     const token = localStorage.getItem("token");
@@ -36,20 +38,32 @@ const EducationalAttainment = () => {
   const [personID, setPersonID] = useState('');
 
   useEffect(() => {
-    const fetchEducationalAttainment = async () => {
+    axios
+      .get(API_URL)
+      .then((res) => setStudents(res.data))
+      .catch((err) => console.error("Fetch error:", err));
+  }, []);
+
+
+
+
+  useEffect(() => {
+    const fetchPersonalInformation = async () => {
+      if (!personID) return;
+
       try {
-        const response = await axios.get('http://localhost:5000/person_table');
-        console.log('Fetched Data:', response.data);  // Log to see the raw data
-        const filtered = response.data.filter(item => String(item.person_id) === String(personIDFromToken));
+        const response = await axios.get(`http://localhost:5000/person_table`);
+        const filtered = response.data.filter(item => String(item.person_id) === String(personID));
         setData(filtered);
-      } catch (error) {
-        console.error("Error fetching Educational Attainment:", error);
+      } catch (err) {
+        console.error("Failed to fetch personal information:", err);
       }
     };
 
-
-    fetchEducationalAttainment();
+    fetchPersonalInformation();
   }, [personID]);
+
+  const [students, setStudents] = useState([]);
 
   useEffect(() => {
     fetch("http://localhost:5000/person_table")
@@ -58,6 +72,21 @@ const EducationalAttainment = () => {
       .catch(err => console.error(err));
   }, []);
 
+  const updateItem = (student) => {
+    axios
+      .put(`${API_URL}/${student.person_id}`, student)
+      .then((res) => {
+        setStudents((prevStudents) =>
+          prevStudents.map((s) =>
+            s.person_id === student.person_id ? res.data : s
+          )
+        );
+      })
+      .catch((err) => console.error("Update error:", err));
+  };
+
+
+
   const steps = [
     { label: 'Personal Information', icon: <PersonIcon />, path: '/applicant' },
     { label: 'Family Background', icon: <FamilyRestroomIcon />, path: '/family_background' },
@@ -65,19 +94,6 @@ const EducationalAttainment = () => {
     { label: 'Health Medical Records', icon: <HealthAndSafetyIcon />, path: '/health_medical_records' },
     { label: 'Other Information', icon: <InfoIcon />, path: '/other_information' },
   ];
-
-
-  const [newEducationalAttainment, setNewEducationalAttainment] = useState({
-    id: "",
-    schoolLevel: "",
-    schoolLastAttended: "",
-    schoolAddress: "",
-    courseProgram: "",
-    honor: "",
-    generalAverage: "",
-    yearGraduated: "",
-    strand: "",
-  });
 
 
   const [activeStep, setActiveStep] = useState(2);
@@ -184,134 +200,193 @@ const EducationalAttainment = () => {
           <hr style={{ color: "yellow" }} className="my-4 border-t border-red-300" />
           <Box display="flex" gap={2} mt={2}>
             {/* School Level */}
-            <Box flex={1}>
-              <div>
-                School Level: <span style={{ color: "red" }}>*</span>
-              </div>
-              <FormControl fullWidth required size="small" style={{ marginTop: "10px" }}>
-                <InputLabel id="schoolLevel">Select School Level</InputLabel>
-                <Select
-                  labelId="schoolLevel"
-                  value={data[0]?.schoolLevel || ""}
-                  label="School Level"
-                  onChange={(e) =>
-                    setNewEducationalAttainment({
-                      ...newEducationalAttainment,
-                      schoolLevel: e.target.value,
-                    })
-                  }
+            {students.map((student) => (
+              <Box
+                key={student.person_id}
+                display="flex"
+                gap={2}
+                mt={2}
+                flexWrap="wrap" // Optional: allows wrapping on small screens
+              >
+                {/* School Level */}
+                <Box flex={1}>
+                  <div>
+                    School Level: <span style={{ color: "red" }}>*</span>
+                  </div>
+                  <FormControl fullWidth required size="small" sx={{ mt: 1 }}>
+                    <InputLabel id={`schoolLevel-${student.person_id}`}>Select School Level</InputLabel>
+                    <Select
+                      labelId={`schoolLevel-${student.person_id}`}
+                      id={`schoolLevel-select-${student.person_id}`}
+                      value={student.schoolLevel || ""}
+                      label="School Level"
+                      onChange={(e) => {
+                        const updatedStudent = {
+                          ...student,
+                          schoolLevel: e.target.value,
+                        };
+                        setStudents((prevStudents) =>
+                          prevStudents.map((s) =>
+                            s.person_id === student.person_id ? updatedStudent : s
+                          )
+                        );
+                        updateItem(updatedStudent);
+                      }}
+                    >
+                      <MenuItem value="">--</MenuItem>
+                      <MenuItem value="High School/Junior High School">High School/Junior High School</MenuItem>
+                      <MenuItem value="Senior High School">Senior High School</MenuItem>
+                      <MenuItem value="Undergraduate">Undergraduate</MenuItem>
+                      <MenuItem value="Graduate">Graduate</MenuItem>
+                      <MenuItem value="ALS">ALS</MenuItem>
+                      <MenuItem value="Vocational/Trade Course">Vocational/Trade Course</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Box>
+
+                {/* School Last Attended */}
+                <Box flex={1}>
+                  <div>
+                    School Last Attended: <span style={{ color: "red" }}>*</span>
+                  </div>
+                  <TextField
+                    label="Enter School Last Attended"
+                    required
+                    fullWidth
+                    size="small"
+                    sx={{ mt: 1 }}
+                    value={student.schoolLastAttended || ""}
+                    onChange={(e) => {
+                      const updatedStudent = {
+                        ...student,
+                        schoolLastAttended: e.target.value,
+                      };
+                      setStudents((prev) =>
+                        prev.map((s) =>
+                          s.person_id === student.person_id ? updatedStudent : s
+                        )
+                      );
+                      updateItem(updatedStudent);
+                    }}
+                  />
+                </Box>
+
+                {/* School Address */}
+                <Box flex={1}>
+                  <div>
+                    School Address: <span style={{ color: "red" }}>*</span>
+                  </div>
+                  <TextField
+                    label="Enter School Address"
+                    required
+                    fullWidth
+                    size="small"
+                    sx={{ mt: 1 }}
+                    value={student.schoolAddress || ""}
+                    onChange={(e) => {
+                      const updatedStudent = {
+                        ...student,
+                        schoolAddress: e.target.value,
+                      };
+                      setStudents((prev) =>
+                        prev.map((s) =>
+                          s.person_id === student.person_id ? updatedStudent : s
+                        )
+                      );
+                      updateItem(updatedStudent);
+                    }}
+                  />
+                </Box>
+
+                {/* Course/Program */}
+                <Box flex={1}>
+                  <div>Course/Program:</div>
+                  <TextField
+                    label="Enter Course/Program"
+                    fullWidth
+                    size="small"
+                    sx={{ mt: 1 }}
+                    value={student.courseProgram || ""}
+                    onChange={(e) => {
+                      const updatedStudent = {
+                        ...student,
+                        courseProgram: e.target.value,
+                      };
+                      setStudents((prev) =>
+                        prev.map((s) =>
+                          s.person_id === student.person_id ? updatedStudent : s
+                        )
+                      );
+                      updateItem(updatedStudent);
+                    }}
+                  />
+                </Box>
+              </Box>
+            ))}
+          </Box>
+          {students.map((student) => (
+            <Box key={student.person_id} display="flex" gap={3} width="100%" mt={2} flexWrap="wrap">
+              {/* Honor */}
+              <Box flex={1} minWidth={200}>
+                <div>Honor:</div>
+                <TextField
+                  label="Enter Honor"
                   fullWidth
-                >
-                  <MenuItem value="">--</MenuItem>
-                  <MenuItem value="High School/Junior High School">High School/Junior High School</MenuItem>
-                  <MenuItem value="Senior High School">Senior High School</MenuItem>
-                  <MenuItem value="Undergraduate">Undergraduate</MenuItem>
-                  <MenuItem value="Graduate">Graduate</MenuItem>
-                  <MenuItem value="ALS">ALS</MenuItem>
-                  <MenuItem value="Vocational/Trade Course">Vocational/Trade Course</MenuItem>
-                </Select>
-              </FormControl>
-            </Box>
+                  size="small"
+                  sx={{ mt: 1 }}
+                  value={student.honor || ""}
+                  onChange={(e) => {
+                    const updatedStudent = { ...student, honor: e.target.value };
+                    setStudents((prev) =>
+                      prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                    );
+                    updateItem(updatedStudent);
+                  }}
+                />
+              </Box>
 
+              {/* General Average */}
+              <Box flex={1} minWidth={200}>
+                <div>Gen Ave. <span style={{ color: "red" }}>*</span></div>
+                <TextField
+                  label="Enter General Average"
+                  required
+                  fullWidth
+                  size="small"
+                  sx={{ mt: 1 }}
+                  value={student.generalAverage || ""}
+                  onChange={(e) => {
+                    const updatedStudent = { ...student, generalAverage: e.target.value };
+                    setStudents((prev) =>
+                      prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                    );
+                    updateItem(updatedStudent);
+                  }}
+                />
+              </Box>
 
-            {/* School Last Attended */}
-            <Box flex={1} gap={2} mt={1.2}>
-              <div>
-                School Last Attended: <span style={{ color: "red" }}>*</span>
-              </div>
-              <TextField
-                label="Enter School Last Attended"
-                required
-                fullWidth
-                size="small"
-                value={data[0]?.schoolLastAttended || ""}
-                onChange={(e) =>
-                  setNewEducationalAttainment({
-                    ...newEducationalAttainment,
-                    schoolLastAttended: e.target.value,
-                  })
-                }
-              />
+              {/* Year Graduated */}
+              <Box flex={1} minWidth={200}>
+                <div>Year Graduated: <span style={{ color: "red" }}>*</span></div>
+                <TextField
+                  label="Enter Year Graduated"
+                  required
+                  fullWidth
+                  size="small"
+                  sx={{ mt: 1 }}
+                  value={student.yearGraduated || ""}
+                  onChange={(e) => {
+                    const updatedStudent = { ...student, yearGraduated: e.target.value };
+                    setStudents((prev) =>
+                      prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                    );
+                    updateItem(updatedStudent);
+                  }}
+                />
+              </Box>
             </Box>
+          ))}
 
-            {/* School Address */}
-            <Box flex={1} gap={2} mt={1.2}>
-              <div>
-                School Address: <span style={{ color: "red" }}>*</span>
-              </div>
-              <TextField
-                label="Enter School Address"
-                required
-                fullWidth
-                size="small"
-                value={data[0]?.schoolAddress || ""}
-                onChange={(e) =>
-                  setNewEducationalAttainment({
-                    ...newEducationalAttainment,
-                    schoolAddress: e.target.value,
-                  })
-                }
-              />
-            </Box>
-
-            {/* Course/Program */}
-            <Box flex={1} gap={2} mt={1.2}>
-              <div>Course/Program:</div>
-              <TextField
-                label="Enter Course/Program"
-                fullWidth
-                size="small"
-                value={data[0]?.courseProgram || ""}
-                onChange={(e) =>
-                  setNewEducationalAttainment({
-                    ...newEducationalAttainment,
-                    courseProgram: e.target.value,
-                  })
-                }
-              />
-            </Box>
-          </Box>
-
-          <Box display="flex" gap={3} width="100%">
-            <Box flexBasis="32%" marginTop="10px">
-              <div>Honor:</div>
-              <TextField
-                label="Enter Honor"
-                style={{ width: "100%" }}
-                size="small"
-                value={data[0]?.honor || ""}
-                onChange={(e) =>
-                  setNewEducationalAttainment({ ...newEducationalAttainment, honor: e.target.value })
-                }
-              />
-            </Box>
-            <Box flexBasis="32%" marginTop="10px">
-              <div>Gen Ave. <span style={{ color: "red" }}>*</span></div>
-              <TextField
-                label="Enter General Average"
-                required
-                style={{ width: "100%" }}
-                size="small"
-                value={data[0]?.generalAverage || ""}
-                onChange={(e) =>
-                  setNewEducationalAttainment({ ...newEducationalAttainment, generalAverage: e.target.value })
-                }
-              />
-            </Box>
-            <Box flexBasis="32%" marginTop="10px">
-              <div>Year Graduated: <span style={{ color: "red" }}>*</span></div>
-              <TextField
-                label="Enter Year Graduated"
-                required
-                style={{ width: "100%" }}
-                size="small"
-                value={data[0]?.yearGraduated || ""}
-                onChange={(e) =>
-                  setNewEducationalAttainment({ ...newEducationalAttainment, yearGraduated: e.target.value })
-                }
-              />
-            </Box>
-          </Box>
 
 
 
@@ -319,47 +394,56 @@ const EducationalAttainment = () => {
           <Typography style={{ fontSize: "20px", color: "#6D2323", fontWeight: "bold" }}>
             Strand (For Senior High School)
           </Typography>
-          <FormControl fullWidth style={{ marginTop: '10px' }}>
-            <InputLabel id="strand">Strand</InputLabel>
-            <Select
-              labelId="strand"
-              value={data[0]?.strand || ""}
-              label="Strand"
-              style={{ width: "100%", marginTop: "5px" }}
+          {students.map((student) => (
+            <FormControl
+              key={student.person_id}
+              fullWidth
+              style={{ marginTop: '10px' }}
               size="small"
-              onChange={(e) =>
-                setNewEducationalAttainment({ ...newEducationalAttainment, strand: e.target.value })
-              }
+              required
             >
-              <MenuItem value="">--</MenuItem>
-              <MenuItem value="Accountancy, Business and Management (ABM)">
-                Accountancy, Business and Management (ABM)
-              </MenuItem>
-              <MenuItem value="Humanities and Social Sciences (HUMSS)">
-                Humanities and Social Sciences (HUMSS)
-              </MenuItem>
-              <MenuItem value="Science, Technology, Engineering, and Mathematics (STEM)">
-                Science, Technology, Engineering, and Mathematics (STEM)
-              </MenuItem>
-              <MenuItem value="General Academic (GAS)">
-                General Academic (GAS)
-              </MenuItem>
-              <MenuItem value="Home Economics (HE)">
-                Home Economics (HE)
-              </MenuItem>
-              <MenuItem value="Information and Communications Technology (ICT)">
-                Information and Communications Technology (ICT)
-              </MenuItem>
-              <MenuItem value="Agri-Fishery Arts (AFA)">
-                Agri-Fishery Arts (AFA)
-              </MenuItem>
-              <MenuItem value="Industrial Arts (IA)">
-                Industrial Arts (IA)
-              </MenuItem>
-              <MenuItem value="Sports Track">Sports Track</MenuItem>
-              <MenuItem value="Design and Arts Track">Design and Arts Track</MenuItem>
-            </Select>
-          </FormControl>
+              <InputLabel id={`strand-label-${student.person_id}`}>Strand</InputLabel>
+              <Select
+                labelId={`strand-label-${student.person_id}`}
+                id={`strand-select-${student.person_id}`}
+                value={student.strand || ""}
+                label="Strand"
+                style={{ width: "100%", marginTop: "5px" }}
+                onChange={(e) => {
+                  const updatedStudent = {
+                    ...student,
+                    strand: e.target.value,
+                  };
+                  setStudents((prevStudents) =>
+                    prevStudents.map((s) =>
+                      s.person_id === student.person_id ? updatedStudent : s
+                    )
+                  );
+                  updateItem(updatedStudent);
+                }}
+              >
+                <MenuItem value="">--</MenuItem>
+                <MenuItem value="Accountancy, Business and Management (ABM)">
+                  Accountancy, Business and Management (ABM)
+                </MenuItem>
+                <MenuItem value="Humanities and Social Sciences (HUMSS)">
+                  Humanities and Social Sciences (HUMSS)
+                </MenuItem>
+                <MenuItem value="Science, Technology, Engineering, and Mathematics (STEM)">
+                  Science, Technology, Engineering, and Mathematics (STEM)
+                </MenuItem>
+                <MenuItem value="General Academic (GAS)">General Academic (GAS)</MenuItem>
+                <MenuItem value="Home Economics (HE)">Home Economics (HE)</MenuItem>
+                <MenuItem value="Information and Communications Technology (ICT)">
+                  Information and Communications Technology (ICT)
+                </MenuItem>
+                <MenuItem value="Agri-Fishery Arts (AFA)">Agri-Fishery Arts (AFA)</MenuItem>
+                <MenuItem value="Industrial Arts (IA)">Industrial Arts (IA)</MenuItem>
+                <MenuItem value="Sports Track">Sports Track</MenuItem>
+                <MenuItem value="Design and Arts Track">Design and Arts Track</MenuItem>
+              </Select>
+            </FormControl>
+          ))}
 
           <Box display="flex" justifyContent="space-between" mt={4}>
             {/* Previous Page Button */}

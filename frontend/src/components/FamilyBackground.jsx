@@ -18,6 +18,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { jwtDecode } from "jwt-decode";
 
+const API_URL = "http://localhost:5000/person_table";
 
 const FamilyBackground = () => {
   const getPersonIdFromToken = () => {
@@ -29,6 +30,8 @@ const FamilyBackground = () => {
     }
     return null;
   };
+
+  const [students, setStudents] = useState([]);
 
   const [personID, setPersonID] = useState('');
   const personIDFromToken = getPersonIdFromToken();
@@ -55,6 +58,29 @@ const FamilyBackground = () => {
       .then(data => setData(data))
       .catch(err => console.error("Error in fallback fetch:", err));
   }, []);
+
+  useEffect(() => {
+    axios
+      .get(API_URL)
+      .then((res) => setStudents(res.data))
+      .catch((err) => console.error("Fetch error:", err));
+  }, []);
+
+
+
+  const updateItem = (student) => {
+    axios
+      .put(`${API_URL}/${student.person_id}`, student)
+      .then((res) => {
+        setStudents((prevStudents) =>
+          prevStudents.map((s) =>
+            s.person_id === student.person_id ? res.data : s
+          )
+        );
+      })
+      .catch((err) => console.error("Update error:", err));
+  };
+
 
 
   const [step, setStep] = useState(2); // Initialize step at 1
@@ -386,90 +412,106 @@ const FamilyBackground = () => {
           {!isFatherDeceased && (
             <Box mt={2}>
               {/* Name Fields Row */}
-              <Box display="flex" gap={2}>
-                <div style={{ marginRight: "-40px" }}><strong><span> <br />Father's Name:</span></strong></div>
-                <Box width="20%">
-                  <div>Family Name: <span style={{ color: "red" }}>*</span></div>
-                  <TextField
-                    label="Enter Last Name"
-                    required
-                    style={{ width: "100%" }}
-                    size="small"
-                    value={data[0]?.father_family_name || ""}
-                    onChange={(e) =>
-                      setNewFamilyBackground({ ...newFamilyBackground, father_family_name: e.target.value })
-                    }
-                  />
+              {students.map((student) => (
+                <Box key={student.person_id} mt={2}>
+                  <div><strong>Father's Name:</strong></div>
+                  <Box display="flex" gap={2} flexWrap="wrap">
+                    {/* Family Name */}
+                    <TextField
+                      label="Family Name *"
+                      required
+                      fullWidth
+                      size="small"
+                      value={student.father_family_name || ""}
+                      onChange={(e) => {
+                        const updatedStudent = { ...student, father_family_name: e.target.value };
+                        setStudents((prev) =>
+                          prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                        );
+                        updateItem(updatedStudent);
+                      }}
+                      sx={{ flex: 1 }}
+                    />
 
+                    {/* Given Name */}
+                    <TextField
+                      label="Given Name *"
+                      required
+                      fullWidth
+                      size="small"
+                      value={student.father_given_name || ""}
+                      onChange={(e) => {
+                        const updatedStudent = { ...student, father_given_name: e.target.value };
+                        setStudents((prev) =>
+                          prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                        );
+                        updateItem(updatedStudent);
+                      }}
+                      sx={{ flex: 1 }}
+                    />
+
+                    {/* Middle Name */}
+                    <TextField
+                      label="Middle Name *"
+                      required
+                      fullWidth
+                      size="small"
+                      value={student.father_middle_name || ""}
+                      onChange={(e) => {
+                        const updatedStudent = { ...student, father_middle_name: e.target.value };
+                        setStudents((prev) =>
+                          prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                        );
+                        updateItem(updatedStudent);
+                      }}
+                      sx={{ flex: 1 }}
+                    />
+
+                    {/* EXT */}
+                    <FormControl fullWidth size="small" sx={{ flex: 1 }}>
+                      <InputLabel id={`ext-label-${student.person_id}`}>EXT *</InputLabel>
+                      <Select
+                        labelId={`ext-label-${student.person_id}`}
+                        value={student.father_ext || ""}
+                        label="EXT *"
+                        onChange={(e) => {
+                          const updatedStudent = { ...student, father_ext: e.target.value };
+                          setStudents((prev) =>
+                            prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                          );
+                          updateItem(updatedStudent);
+                        }}
+                      >
+                        <MenuItem value="">None</MenuItem>
+                        <MenuItem value="Jr.">Jr.</MenuItem>
+                        <MenuItem value="Sr.">Sr.</MenuItem>
+                        <MenuItem value="I">I</MenuItem>
+                        <MenuItem value="II">II</MenuItem>
+                        <MenuItem value="III">III</MenuItem>
+                        <MenuItem value="IV">IV</MenuItem>
+                        <MenuItem value="V">V</MenuItem>
+                      </Select>
+                    </FormControl>
+
+                    {/* Nick Name */}
+                    <TextField
+                      label="Nick Name"
+                      fullWidth
+                      size="small"
+                      value={student.father_nickname || ""}
+                      onChange={(e) => {
+                        const updatedStudent = { ...student, father_nickname: e.target.value };
+                        setStudents((prev) =>
+                          prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                        );
+                        updateItem(updatedStudent);
+                      }}
+                      sx={{ flex: 1 }}
+                    />
+                  </Box>
                 </Box>
+              ))}
 
-                <Box width="20%">
-                  <div>Given Name: <span style={{ color: "red" }}>*</span></div>
-                  <TextField
-                    label="Enter First Name"
-                    required
-                    style={{ width: "100%" }}
-                    size="small"
-                    value={data[0]?.father_given_name || ""}
-                    onChange={(e) =>
-                      setNewFamilyBackground({ ...newFamilyBackground, father_given_name: e.target.value })
-                    }
-                  />
-                </Box>
-
-                <Box width="20%">
-                  <div>Middle Name: <span style={{ color: "red" }}>*</span></div>
-                  <TextField
-                    label="Enter Middle Name"
-                    required
-                    style={{ width: "100%" }}
-                    size="small"
-                    value={data[0]?.father_middle_name || ""}
-                    onChange={(e) =>
-                      setNewFamilyBackground({ ...newFamilyBackground, father_middle_name: e.target.value })
-                    }
-                  />
-                </Box>
-
-                <Box width="20%">
-                  <div>EXT: <span style={{ color: "red" }}>*</span></div>
-                  <FormControl sx={{ width: "100%", }} size="small">
-                    <InputLabel id="extension-label">EXT.</InputLabel>
-                    <Select
-                      labelId="extension-label"
-                      id="extension-select"
-
-                      value={data[0]?.father_ext || ""}
-                      label="EXT."
-                      onChange={(e) =>
-                        setNewFamilyBackground({ ...newFamilyBackground, father_ext: e.target.value })
-                      }
-                    >
-                      <MenuItem value="">None</MenuItem>
-                      <MenuItem value="Jr.">Jr.</MenuItem>
-                      <MenuItem value="Sr.">Sr.</MenuItem>
-                      <MenuItem value="I">I</MenuItem>
-                      <MenuItem value="II">II</MenuItem>
-                      <MenuItem value="III">III</MenuItem>
-                      <MenuItem value="IV">IV</MenuItem>
-                      <MenuItem value="V">V</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Box>
-
-                <Box width="20%">
-                  <div>Nick Name:</div>
-                  <TextField
-                    label="Enter Nickname"
-                    style={{ width: "100%" }}
-                    size="small"
-                    value={data[0]?.father_nickname || ""}
-                    onChange={(e) =>
-                      setNewFamilyBackground({ ...newFamilyBackground, father_nickname: e.target.value })
-                    }
-                  />
-                </Box>
-              </Box>
 
 
 
@@ -497,14 +539,16 @@ const FamilyBackground = () => {
                       onChange={(e) => {
                         setFatherEduNotApplicable(e.target.checked);
                         if (e.target.checked) {
-                          setNewFamilyBackground({
-                            ...newFamilyBackground,
+                          // Clear all father education fields for all students
+                          const cleared = students.map((s) => ({
+                            ...s,
                             father_education_level: "",
                             father_last_school: "",
                             father_course: "",
                             father_year_graduated: "",
-                            father_school_address: "",  // Clear all fields when checkbox is checked
-                          });
+                            father_school_address: "",
+                          }));
+                          setStudents(cleared);
                         }
                       }}
                     />
@@ -513,58 +557,104 @@ const FamilyBackground = () => {
                 />
 
                 {/* Father Educational Details */}
-                {!fatherEduNotApplicable && (
-                  <Box
-                    display="flex"
-                    gap={2}
-                    mt={2}
-                    flexWrap="nowrap"  // Ensure no wrapping of items
-                    sx={{
-                      '& > *': {
-                        flex: 1,
-                        minWidth: 150, // This can be adjusted based on your layout needs
-                      },
-                    }}
-                  >
-                    <TextField
-                      label="Father's Education Level"
-                      size="small"
-                      value={data[0]?.father_education_level || ""}
-                      onChange={(e) => handleChange("father_education_level", e.target.value)}
-                      sx={{ flex: 1 }}
-                    />
-                    <TextField
-                      label="Father's Last School Attended"
-                      size="small"
-                      value={data[0]?.father_last_school || ""}
-                      onChange={(e) => handleChange("father_last_school", e.target.value)}
-                      sx={{ flex: 1 }}
-                    />
-                    <TextField
-                      label="Father's Course/Program"
-                      size="small"
-                      value={data[0]?.father_course || ""}
-                      onChange={(e) => handleChange("father_course", e.target.value)}
-                      sx={{ flex: 1 }}
-                    />
-                    <TextField
-                      label="Father's Year Graduated"
-                      size="small"
-                      value={data[0]?.father_year_graduated || ""}
-                      onChange={(e) => handleChange("father_year_graduated", e.target.value)}
-                      sx={{ flex: 1 }}
-                    />
-                    <TextField
-                      label="Father's School Address"
-                      size="small"
-                      value={data[0]?.father_school_address || ""}
-                      onChange={(e) => handleChange("father_school_address", e.target.value)}
-                      sx={{ flex: 1 }}
-                    />
-                  </Box>
+                {!fatherEduNotApplicable &&
+                  students.map((student) => (
+                    <Box
+                      key={student.person_id}
+                      display="flex"
+                      gap={2}
+                      mt={2}
+                      flexWrap="nowrap"
+                      sx={{
+                        '& > *': {
+                          flex: 1,
+                          minWidth: 150,
+                        },
+                      }}
+                    >
+                      <TextField
+                        label="Father's Education Level"
+                        size="small"
+                        value={student.father_education_level || ""}
+                        onChange={(e) => {
+                          const updatedStudent = {
+                            ...student,
+                            father_education_level: e.target.value,
+                          };
+                          setStudents((prev) =>
+                            prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                          );
+                          updateItem(updatedStudent);
+                        }}
+                      />
 
-                )}
+                      <TextField
+                        label="Father's Last School Attended"
+                        size="small"
+                        value={student.father_last_school || ""}
+                        onChange={(e) => {
+                          const updatedStudent = {
+                            ...student,
+                            father_last_school: e.target.value,
+                          };
+                          setStudents((prev) =>
+                            prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                          );
+                          updateItem(updatedStudent);
+                        }}
+                      />
+
+                      <TextField
+                        label="Father's Course/Program"
+                        size="small"
+                        value={student.father_course || ""}
+                        onChange={(e) => {
+                          const updatedStudent = {
+                            ...student,
+                            father_course: e.target.value,
+                          };
+                          setStudents((prev) =>
+                            prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                          );
+                          updateItem(updatedStudent);
+                        }}
+                      />
+
+                      <TextField
+                        label="Father's Year Graduated"
+                        size="small"
+                        value={student.father_year_graduated || ""}
+                        onChange={(e) => {
+                          const updatedStudent = {
+                            ...student,
+                            father_year_graduated: e.target.value,
+                          };
+                          setStudents((prev) =>
+                            prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                          );
+                          updateItem(updatedStudent);
+                        }}
+                      />
+
+                      <TextField
+                        label="Father's School Address"
+                        size="small"
+                        value={student.father_school_address || ""}
+                        onChange={(e) => {
+                          const updatedStudent = {
+                            ...student,
+                            father_school_address: e.target.value,
+                          };
+                          setStudents((prev) =>
+                            prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                          );
+                          updateItem(updatedStudent);
+                        }}
+                      />
+                    </Box>
+                  ))}
               </Box>
+
               <Typography
                 style={{
                   fontSize: "20px",
@@ -577,75 +667,118 @@ const FamilyBackground = () => {
                 Contact Information:
               </Typography>
               {/* Contact Info Fields Row */}
-              <Box display="flex" gap={2}>
-                <Box width="25%">
-                  <div style={{ fontSize: "12px", marginBottom: "6px", fontFamily: "Arial" }}>Contact Number:</div>
-                  <TextField
-                    label="Enter Contact Number"
-                    required
-                    style={{ width: "100%" }}
-                    size="small"
-                    value={data[0]?.father_contact || ""}
-                    onChange={(e) =>
-                      setNewFamilyBackground({ ...newFamilyBackground, father_contact: e.target.value })
-                    }
-                  />
-                </Box>
+              {students.map((student) => (
+                <Box key={student.person_id} display="flex" gap={2} mt={2}>
+                  <Box sx={{ width: "25%" }}>
+                    <div style={{ fontSize: "12px", marginBottom: "6px", fontFamily: "Arial" }}>Contact Number:</div>
+                    <TextField
+                      label="Enter Contact Number"
+                      required
+                      fullWidth
+                      size="small"
+                      value={student.father_contact || ""}
+                      onChange={(e) => {
+                        const updatedStudent = {
+                          ...student,
+                          father_contact: e.target.value,
+                        };
+                        setStudents((prev) =>
+                          prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                        );
+                        updateItem(updatedStudent);
+                      }}
+                    />
+                  </Box>
 
-                <Box width="25%">
-                  <div style={{ fontSize: "12px", marginBottom: "6px", fontFamily: "Arial" }}>Occupation:</div>
-                  <TextField
-                    label="Enter Occupation"
-                    required
-                    style={{ width: "100%" }}
-                    size="small"
-                    value={data[0]?.father_occupation || ""}
-                    onChange={(e) =>
-                      setNewFamilyBackground({ ...newFamilyBackground, father_occupation: e.target.value })
-                    }
-                  />
-                </Box>
+                  <Box sx={{ width: "25%" }}>
+                    <div style={{ fontSize: "12px", marginBottom: "6px", fontFamily: "Arial" }}>Occupation:</div>
+                    <TextField
+                      label="Enter Occupation"
+                      required
+                      fullWidth
+                      size="small"
+                      value={student.father_occupation || ""}
+                      onChange={(e) => {
+                        const updatedStudent = {
+                          ...student,
+                          father_occupation: e.target.value,
+                        };
+                        setStudents((prev) =>
+                          prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                        );
+                        updateItem(updatedStudent);
+                      }}
+                    />
+                  </Box>
 
-                <Box width="25%">
-                  <div style={{ fontSize: "12px", marginBottom: "6px", fontFamily: "Arial" }}>Employer/Name of Company:</div>
-                  <TextField
-                    label="Enter Employer/Company"
-                    style={{ width: "100%" }}
-                    size="small"
-                    value={data[0]?.father_employer || ""}
-                    onChange={(e) =>
-                      setNewFamilyBackground({ ...newFamilyBackground, father_employer: e.target.value })
-                    }
-                  />
-                </Box>
+                  <Box sx={{ width: "25%" }}>
+                    <div style={{ fontSize: "12px", marginBottom: "6px", fontFamily: "Arial" }}>Employer/Name of Company:</div>
+                    <TextField
+                      label="Enter Employer/Company"
+                      fullWidth
+                      size="small"
+                      value={student.father_employer || ""}
+                      onChange={(e) => {
+                        const updatedStudent = {
+                          ...student,
+                          father_employer: e.target.value,
+                        };
+                        setStudents((prev) =>
+                          prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                        );
+                        updateItem(updatedStudent);
+                      }}
+                    />
+                  </Box>
 
-                <Box width="25%">
-                  <div style={{ fontSize: "12px", marginBottom: "6px", fontFamily: "Arial" }}>Monthly Income:</div>
-                  <TextField
-                    label="Enter Monthly Income"
-                    style={{ width: "100%" }}
-                    size="small"
-                    value={data[0]?.father_income || ""}
-                    onChange={(e) =>
-                      setNewFamilyBackground({ ...newFamilyBackground, father_income: e.target.value })
-                    }
-                  />
+                  <Box sx={{ width: "25%" }}>
+                    <div style={{ fontSize: "12px", marginBottom: "6px", fontFamily: "Arial" }}>Monthly Income:</div>
+                    <TextField
+                      label="Enter Monthly Income"
+                      fullWidth
+                      size="small"
+                      value={student.father_income || ""}
+                      onChange={(e) => {
+                        const updatedStudent = {
+                          ...student,
+                          father_income: e.target.value,
+                        };
+                        setStudents((prev) =>
+                          prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                        );
+                        updateItem(updatedStudent);
+                      }}
+                    />
+                  </Box>
                 </Box>
-              </Box>
+              ))}
+
 
               {/* Email Field Full Width */}
-              <Box width="100%" marginTop="10px">
-                <div>Email Address:</div>
-                <TextField
-                  label="Enter Email"
-                  style={{ width: "49.5%" }}
-                  size="small"
-                  value={data[0]?.father_email || ""}
-                  onChange={(e) =>
-                    setNewFamilyBackground({ ...newFamilyBackground, father_email: e.target.value })
-                  }
-                />
-              </Box>
+              {students.map((student) => (
+                <Box key={student.person_id} width="100%" mt={2}>
+                  <div>Email Address:</div>
+                  <TextField
+                    label="Enter Email"
+                    fullWidth
+                    size="small"
+                    value={student.father_email || ""}
+                    onChange={(e) => {
+                      const updatedStudent = {
+                        ...student,
+                        father_email: e.target.value,
+                      };
+                      setStudents((prev) =>
+                        prev.map((s) =>
+                          s.person_id === student.person_id ? updatedStudent : s
+                        )
+                      );
+                      updateItem(updatedStudent);
+                    }}
+                  />
+                </Box>
+              ))}
+
             </Box>
           )}
 
@@ -677,70 +810,109 @@ const FamilyBackground = () => {
           {!isMotherDeceased && (
             <Box mt={2}>
               {/* Full Name Row */}
-              <Box display="flex" gap={2} marginTop="10px">
-                <div style={{ marginRight: "-40px" }}><strong>Mother's <span> <br />Maiden Name:</span></strong></div>
-                <Box width="25%">
+              {students.map((student) => (
+                <Box key={student.person_id} mt={2}>
+                  {/* Full Name Row */}
+                  <Box display="flex" gap={2} marginTop="10px">
+                    <div style={{ marginRight: "-40px" }}><strong>Mother's <span> <br />Maiden Name:</span></strong></div>
 
-                  <div>Family Name: <span style={{ color: "red" }}>*</span></div>
-                  <TextField
-                    label="Enter Family Name"
-                    required
-                    style={{ width: "100%" }}
-                    size="small"
-                    value={data[0]?.mother_family_name || ""}
-                    onChange={(e) =>
-                      setNewFamilyBackground({ ...newFamilyBackground, mother_family_name: e.target.value })
-                    }
-                  />
-                </Box>
+                    <Box width="25%">
+                      <div>Family Name: <span style={{ color: "red" }}>*</span></div>
+                      <TextField
+                        label="Enter Family Name"
+                        required
+                        style={{ width: "100%" }}
+                        size="small"
+                        value={student.mother_family_name || ""}
+                        onChange={(e) => {
+                          const updatedStudent = {
+                            ...student,
+                            mother_family_name: e.target.value,
+                          };
+                          setStudents((prev) =>
+                            prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                          );
+                          updateItem(updatedStudent);
+                        }}
+                      />
+                    </Box>
 
-                <Box width="25%">
-                  <div>Given Name: <span style={{ color: "red" }}>*</span></div>
-                  <TextField
-                    label="Enter Given Name"
-                    required
-                    style={{ width: "100%" }}
-                    size="small"
-                    value={data[0]?.mother_given_name || ""}
-                    onChange={(e) =>
-                      setNewFamilyBackground({ ...newFamilyBackground, mother_given_name: e.target.value })
-                    }
-                  />
-                </Box>
+                    <Box width="25%">
+                      <div>Given Name: <span style={{ color: "red" }}>*</span></div>
+                      <TextField
+                        label="Enter Given Name"
+                        required
+                        style={{ width: "100%" }}
+                        size="small"
+                        value={student.mother_given_name || ""}
+                        onChange={(e) => {
+                          const updatedStudent = {
+                            ...student,
+                            mother_given_name: e.target.value,
+                          };
+                          setStudents((prev) =>
+                            prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                          );
+                          updateItem(updatedStudent);
+                        }}
+                      />
+                    </Box>
 
-                <Box width="25%">
-                  <div>Middle Name: <span style={{ color: "red" }}>*</span></div>
-                  <TextField
-                    label="Enter Middle Name"
-                    required
-                    style={{ width: "100%" }}
-                    size="small"
-                    value={data[0]?.mother_middle_name || ""}
-                    onChange={(e) =>
-                      setNewFamilyBackground({ ...newFamilyBackground, mother_middle_name: e.target.value })
-                    }
-                  />
-                </Box>
+                    <Box width="25%">
+                      <div>Middle Name: <span style={{ color: "red" }}>*</span></div>
+                      <TextField
+                        label="Enter Middle Name"
+                        required
+                        style={{ width: "100%" }}
+                        size="small"
+                        value={student.mother_middle_name || ""}
+                        onChange={(e) => {
+                          const updatedStudent = {
+                            ...student,
+                            mother_middle_name: e.target.value,
+                          };
+                          setStudents((prev) =>
+                            prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                          );
+                          updateItem(updatedStudent);
+                        }}
+                      />
+                    </Box>
 
-                <Box width="25%">
-                  <div>Nick Name:</div>
-                  <TextField
-                    label="Enter Nickname"
-                    style={{ width: "100%" }}
-                    size="small"
-                    value={data[0]?.mother_nickname || ""}
-                    onChange={(e) =>
-                      setNewFamilyBackground({ ...newFamilyBackground, mother_nickname: e.target.value })
-                    }
-                  />
+                    <Box width="25%">
+                      <div>Nick Name:</div>
+                      <TextField
+                        label="Enter Nickname"
+                        style={{ width: "100%" }}
+                        size="small"
+                        value={student.mother_nickname || ""}
+                        onChange={(e) => {
+                          const updatedStudent = {
+                            ...student,
+                            mother_nickname: e.target.value,
+                          };
+                          setStudents((prev) =>
+                            prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                          );
+                          updateItem(updatedStudent);
+                        }}
+                      />
+                    </Box>
+                  </Box>
                 </Box>
-              </Box>
+              ))}
+
               < br />
               <hr style={{ color: "yellow" }} className="my-4 border-t border-red-300" />
 
               {/* Contact Info Title */}
               <Typography
-                style={{ fontSize: "20px", color: "#6D2323", fontWeight: "bold", marginTop: "20px" }}
+                style={{
+                  fontSize: "20px",
+                  color: "#6D2323",
+                  fontWeight: "bold",
+                  marginTop: "20px",
+                }}
               >
                 Educational Background of Mother:
               </Typography>
@@ -759,7 +931,7 @@ const FamilyBackground = () => {
                           mother_last_school: "",
                           mother_course: "",
                           mother_year_graduated: "",
-                          mother_school_address: "",  // Clear all fields when checkbox is checked
+                          mother_school_address: "", // Clear all fields when checkbox is checked
                         });
                       }
                     }}
@@ -769,62 +941,105 @@ const FamilyBackground = () => {
               />
 
               {/* Mother Educational Details */}
-              {!motherEduNotApplicable && (
-                <Box sx={{ p: 2 }}>
+              {!motherEduNotApplicable && students.map((student) => (
+                <Box key={student.person_id} sx={{ p: 2 }}>
                   {/* Mother Educational Details */}
-                  {!motherEduNotApplicable && (
-                    <Box
-                      display="flex"
-                      gap={2}
-                      mt={2}
-                      flexWrap="nowrap"  // Prevent wrapping of items
-                      sx={{
-                        '& > *': {
-                          flex: 1,
-                          minWidth: 150, // Adjust width of each TextField as needed
-                        },
+                  <Box
+                    display="flex"
+                    gap={2}
+                    mt={2}
+                    flexWrap="nowrap" // Prevent wrapping of items
+                    sx={{
+                      '& > *': {
+                        flex: 1,
+                        minWidth: 150, // Adjust width of each TextField as needed
+                      },
+                    }}
+                  >
+                    <TextField
+                      label="Mother's Education Level"
+                      size="small"
+                      value={student.mother_education_level || ""}
+                      onChange={(e) => {
+                        const updatedStudent = {
+                          ...student,
+                          mother_education_level: e.target.value,
+                        };
+                        setStudents((prev) =>
+                          prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                        );
+                        updateItem(updatedStudent);
                       }}
-                    >
-                      <TextField
-                        label="Mother's Education Level"
-                        size="small"
-                        value={data[0]?.mother_education_level || ""}
-                        onChange={(e) => handleChange("mother_education_level", e.target.value)}
-                        sx={{ flex: 1 }}
-                      />
-                      <TextField
-                        label="Mother's Last School Attended"
-                        size="small"
-                        value={data[0]?.mother_last_school || ""}
-                        onChange={(e) => handleChange("mother_last_school", e.target.value)}
-                        sx={{ flex: 1 }}
-                      />
-                      <TextField
-                        label="Mother's Course/Program"
-                        size="small"
-                        value={data[0]?.mother_course || ""}
-                        onChange={(e) => handleChange("mother_course", e.target.value)}
-                        sx={{ flex: 1 }}
-                      />
-                      <TextField
-                        label="Mother's Year Graduated"
-                        size="small"
-                        value={data[0]?.mother_year_graduated || ""}
-                        onChange={(e) => handleChange("mother_year_graduated", e.target.value)}
-                        sx={{ flex: 1 }}
-                      />
-                      <TextField
-                        label="Mother's School Address"
-                        size="small"
-                        value={data[0]?.mother_school_address || ""}
-                        onChange={(e) => handleChange("mother_school_address", e.target.value)}
-                        sx={{ flex: 1 }}
-                      />
-                    </Box>
-                  )}
+                      sx={{ flex: 1 }}
+                    />
+                    <TextField
+                      label="Mother's Last School Attended"
+                      size="small"
+                      value={student.mother_last_school || ""}
+                      onChange={(e) => {
+                        const updatedStudent = {
+                          ...student,
+                          mother_last_school: e.target.value,
+                        };
+                        setStudents((prev) =>
+                          prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                        );
+                        updateItem(updatedStudent);
+                      }}
+                      sx={{ flex: 1 }}
+                    />
+                    <TextField
+                      label="Mother's Course/Program"
+                      size="small"
+                      value={student.mother_course || ""}
+                      onChange={(e) => {
+                        const updatedStudent = {
+                          ...student,
+                          mother_course: e.target.value,
+                        };
+                        setStudents((prev) =>
+                          prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                        );
+                        updateItem(updatedStudent);
+                      }}
+                      sx={{ flex: 1 }}
+                    />
+                    <TextField
+                      label="Mother's Year Graduated"
+                      size="small"
+                      value={student.mother_year_graduated || ""}
+                      onChange={(e) => {
+                        const updatedStudent = {
+                          ...student,
+                          mother_year_graduated: e.target.value,
+                        };
+                        setStudents((prev) =>
+                          prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                        );
+                        updateItem(updatedStudent);
+                      }}
+                      sx={{ flex: 1 }}
+                    />
+                    <TextField
+                      label="Mother's School Address"
+                      size="small"
+                      value={student.mother_school_address || ""}
+                      onChange={(e) => {
+                        const updatedStudent = {
+                          ...student,
+                          mother_school_address: e.target.value,
+                        };
+                        setStudents((prev) =>
+                          prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                        );
+                        updateItem(updatedStudent);
+                      }}
+                      sx={{ flex: 1 }}
+                    />
+                  </Box>
                 </Box>
+              ))}
 
-              )}
               <Typography
                 style={{ fontSize: "20px", color: "#6D2323", fontWeight: "bold", marginTop: "20px" }}
               >
@@ -833,75 +1048,116 @@ const FamilyBackground = () => {
 
 
               {/* Contact Information Row */}
-              <Box display="flex" gap={2} marginTop="10px">
-                <Box width="25%">
-                  <div style={{ fontSize: "12px", marginBottom: "6px", fontFamily: "Arial" }}>Contact Number:</div>
-                  <TextField
-                    label="Enter Contact Number"
-                    required
-                    style={{ width: "100%" }}
-                    size="small"
-                    value={data[0]?.mother_contact || ""}
-                    onChange={(e) =>
-                      setNewFamilyBackground({ ...newFamilyBackground, mother_contact: e.target.value })
-                    }
-                  />
-                </Box>
+              {students.map((student) => (
+                <Box key={student.person_id} display="flex" gap={2} marginTop="10px">
+                  <Box width="25%">
+                    <div style={{ fontSize: "12px", marginBottom: "6px", fontFamily: "Arial" }}>Contact Number:</div>
+                    <TextField
+                      label="Enter Contact Number"
+                      required
+                      style={{ width: "100%" }}
+                      size="small"
+                      value={student.mother_contact || ""}
+                      onChange={(e) => {
+                        const updatedStudent = {
+                          ...student,
+                          mother_contact: e.target.value,
+                        };
+                        setStudents((prev) =>
+                          prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                        );
+                        updateItem(updatedStudent);
+                      }}
+                    />
+                  </Box>
 
-                <Box width="25%">
-                  <div style={{ fontSize: "12px", marginBottom: "6px", fontFamily: "Arial" }}>Occupation:</div>
-                  <TextField
-                    label="Enter Occupation"
-                    required
-                    style={{ width: "100%" }}
-                    size="small"
-                    value={data[0]?.mother_occupation || ""}
-                    onChange={(e) =>
-                      setNewFamilyBackground({ ...newFamilyBackground, mother_occupation: e.target.value })
-                    }
-                  />
-                </Box>
+                  <Box width="25%">
+                    <div style={{ fontSize: "12px", marginBottom: "6px", fontFamily: "Arial" }}>Occupation:</div>
+                    <TextField
+                      label="Enter Occupation"
+                      required
+                      style={{ width: "100%" }}
+                      size="small"
+                      value={student.mother_occupation || ""}
+                      onChange={(e) => {
+                        const updatedStudent = {
+                          ...student,
+                          mother_occupation: e.target.value,
+                        };
+                        setStudents((prev) =>
+                          prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                        );
+                        updateItem(updatedStudent);
+                      }}
+                    />
+                  </Box>
 
-                <Box width="25%">
-                  <div style={{ fontSize: "12px", marginBottom: "6px", fontFamily: "Arial" }}>Employer/Name of Company:</div>
-                  <TextField
-                    label="Enter Employer/Company"
-                    style={{ width: "100%" }}
-                    size="small"
-                    value={data[0]?.mother_employer || ""}
-                    onChange={(e) =>
-                      setNewFamilyBackground({ ...newFamilyBackground, mother_employer: e.target.value })
-                    }
-                  />
-                </Box>
+                  <Box width="25%">
+                    <div style={{ fontSize: "12px", marginBottom: "6px", fontFamily: "Arial" }}>Employer/Name of Company:</div>
+                    <TextField
+                      label="Enter Employer/Company"
+                      style={{ width: "100%" }}
+                      size="small"
+                      value={student.mother_employer || ""}
+                      onChange={(e) => {
+                        const updatedStudent = {
+                          ...student,
+                          mother_employer: e.target.value,
+                        };
+                        setStudents((prev) =>
+                          prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                        );
+                        updateItem(updatedStudent);
+                      }}
+                    />
+                  </Box>
 
-                <Box width="25%">
-                  <div style={{ fontSize: "12px", marginBottom: "6px", fontFamily: "Arial" }}>Monthly Income:</div>
-                  <TextField
-                    label="Enter Monthly Income"
-                    style={{ width: "100%" }}
-                    size="small"
-                    value={data[0]?.mother_income || ""}
-                    onChange={(e) =>
-                      setNewFamilyBackground({ ...newFamilyBackground, mother_income: e.target.value })
-                    }
-                  />
+                  <Box width="25%">
+                    <div style={{ fontSize: "12px", marginBottom: "6px", fontFamily: "Arial" }}>Monthly Income:</div>
+                    <TextField
+                      label="Enter Monthly Income"
+                      style={{ width: "100%" }}
+                      size="small"
+                      value={student.mother_income || ""}
+                      onChange={(e) => {
+                        const updatedStudent = {
+                          ...student,
+                          mother_income: e.target.value,
+                        };
+                        setStudents((prev) =>
+                          prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                        );
+                        updateItem(updatedStudent);
+                      }}
+                    />
+                  </Box>
                 </Box>
-              </Box>
+              ))}
+
 
               {/* Email Field */}
-              <Box width="100%" marginTop="10px">
-                <div>Email Address:</div>
-                <TextField
-                  label="Enter Email"
-                  style={{ width: "49.5%" }}
-                  size="small"
-                  value={data[0]?.mother_email || ""}
-                  onChange={(e) =>
-                    setNewFamilyBackground({ ...newFamilyBackground, mother_email: e.target.value })
-                  }
-                />
-              </Box>
+              {students.map((student) => (
+                <Box key={student.person_id} width="100%" marginTop="10px">
+                  <div>Email Address:</div>
+                  <TextField
+                    label="Enter Email"
+                    style={{ width: "49.5%" }}
+                    size="small"
+                    value={student.mother_email || ""}
+                    onChange={(e) => {
+                      const updatedStudent = {
+                        ...student,
+                        mother_email: e.target.value,
+                      };
+                      setStudents((prev) =>
+                        prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                      );
+                      updateItem(updatedStudent);
+                    }}
+                  />
+                </Box>
+              ))}
+
             </Box>
           )}
 
@@ -921,34 +1177,46 @@ const FamilyBackground = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px', }}>
               <div ><strong>Guardian:</strong></div>
 
-              <FormControl fullWidth>
-                <InputLabel id="guardian-label">Guardian</InputLabel>
-                <Select
-                  labelId="guardian-label"
-                  label="Guardian"
-                  value={data[0]?.guardian || ""}
-                  style={{ width: "20%", marginTop: "5px" }}
-                  size="small"
-                  onChange={(e) =>
-                    setNewFamilyBackground({ ...newFamilyBackground, guardian: e.target.value })
-                  }
-                >
+              {students.map((student) => (
+                <FormControl fullWidth style={{ marginTop: '10px' }} size="small" required key={student.person_id}>
+                  <InputLabel id={`guardian-label-${student.person_id}`}>Guardian</InputLabel>
+                  <Select
+                    labelId={`guardian-label-${student.person_id}`}
+                    id={`guardian-select-${student.person_id}`}
+                    value={student.guardian || ""}
+                    label="Guardian"
+                    style={{ width: "20%", marginTop: "5px" }}
+                    onChange={(e) => {
+                      const updatedGuardian = e.target.value;
+                      const updatedStudent = { ...student, guardian: updatedGuardian };
 
-                  <MenuItem value="Father">Father</MenuItem>
-                  <MenuItem value="Mother">Mother</MenuItem>
-                  <MenuItem value="Brother/Sister">Brother/Sister</MenuItem>
-                  <MenuItem value="Uncle">Uncle</MenuItem>
+                      // Update local state
+                      setStudents((prevStudents) =>
+                        prevStudents.map((s) =>
+                          s.person_id === student.person_id ? updatedStudent : s
+                        )
+                      );
 
-                  <MenuItem value="StepFather">Stepfather</MenuItem>
-                  <MenuItem value="StepMother">Stepmother</MenuItem>
-                  <MenuItem value="Cousin">Cousin</MenuItem>
-                  <MenuItem value="Father in Law">Father-in-law</MenuItem>
-                  <MenuItem value="Mother in Law">Mother-in-law</MenuItem>
-                  <MenuItem value="Sister in Law">Sister-in-law</MenuItem>
-                  <MenuItem value="Spouse">Spouse</MenuItem>
-                  <MenuItem value="Others">Others</MenuItem>
-                </Select>
-              </FormControl>
+                      // Immediately update backend
+                      updateItem(updatedStudent);
+                    }}
+                  >
+                    <MenuItem value="Father">Father</MenuItem>
+                    <MenuItem value="Mother">Mother</MenuItem>
+                    <MenuItem value="Brother/Sister">Brother/Sister</MenuItem>
+                    <MenuItem value="Uncle">Uncle</MenuItem>
+                    <MenuItem value="StepFather">Stepfather</MenuItem>
+                    <MenuItem value="StepMother">Stepmother</MenuItem>
+                    <MenuItem value="Cousin">Cousin</MenuItem>
+                    <MenuItem value="Father in Law">Father-in-law</MenuItem>
+                    <MenuItem value="Mother in Law">Mother-in-law</MenuItem>
+                    <MenuItem value="Sister in Law">Sister-in-law</MenuItem>
+                    <MenuItem value="Spouse">Spouse</MenuItem>
+                    <MenuItem value="Others">Others</MenuItem>
+                  </Select>
+                </FormControl>
+              ))}
+
             </div>
 
 
@@ -957,86 +1225,125 @@ const FamilyBackground = () => {
 
             <Box display="flex" gap={2}>
               <div style={{ marginRight: "-40px" }}><strong>Guardian Name's:</strong></div>
-              <Box width="20%">
-                <div>Family Name: <span style={{ color: "red" }}>*</span></div>
-                <TextField
-                  label="Enter Family Name"
-                  required
-                  style={{ width: "100%" }}
-                  size="small"
-                  value={data[0]?.guardian_family_name || ""}
-                  onChange={(e) =>
-                    setNewFamilyBackground({ ...newFamilyBackground, guardian_family_name: e.target.value })
-                  }
-                />
-              </Box>
+              {students.map((student) => (
+                <Box key={student.person_id} display="flex" gap={2} width="100%" marginTop="10px">
+                  {/* Family Name */}
+                  <Box width="20%">
+                    <div>Family Name: <span style={{ color: "red" }}>*</span></div>
+                    <TextField
+                      label="Enter Family Name"
+                      required
+                      style={{ width: "100%" }}
+                      size="small"
+                      value={student.guardian_family_name || ""}
+                      onChange={(e) =>
+                        setStudents((prevStudents) =>
+                          prevStudents.map((s) =>
+                            s.person_id === student.person_id
+                              ? { ...s, guardian_family_name: e.target.value }
+                              : s
+                          )
+                        )
+                      }
+                    />
+                  </Box>
 
-              <Box width="20%">
-                <div>Given Name: <span style={{ color: "red" }}>*</span></div>
-                <TextField
-                  label="Enter Given Name"
-                  required
-                  style={{ width: "100%" }}
-                  size="small"
-                  value={data[0]?.guardian_given_name || ""}
-                  onChange={(e) =>
-                    setNewFamilyBackground({ ...newFamilyBackground, guardian_given_name: e.target.value })
-                  }
-                />
-              </Box>
+                  {/* Given Name */}
+                  <Box width="20%">
+                    <div>Given Name: <span style={{ color: "red" }}>*</span></div>
+                    <TextField
+                      label="Enter Given Name"
+                      required
+                      style={{ width: "100%" }}
+                      size="small"
+                      value={student.guardian_given_name || ""}
+                      onChange={(e) =>
+                        setStudents((prevStudents) =>
+                          prevStudents.map((s) =>
+                            s.person_id === student.person_id
+                              ? { ...s, guardian_given_name: e.target.value }
+                              : s
+                          )
+                        )
+                      }
+                    />
+                  </Box>
 
-              <Box width="20%">
-                <div>Middle Name: <span style={{ color: "red" }}>*</span></div>
-                <TextField
-                  label="Enter Middle Name"
-                  required
-                  style={{ width: "100%" }}
-                  size="small"
-                  value={data[0]?.guardian_middle_name || ""}
-                  onChange={(e) =>
-                    setNewFamilyBackground({ ...newFamilyBackground, guardian_middle_name: e.target.value })
-                  }
-                />
-              </Box>
+                  {/* Middle Name */}
+                  <Box width="20%">
+                    <div>Middle Name: <span style={{ color: "red" }}>*</span></div>
+                    <TextField
+                      label="Enter Middle Name"
+                      required
+                      style={{ width: "100%" }}
+                      size="small"
+                      value={student.guardian_middle_name || ""}
+                      onChange={(e) =>
+                        setStudents((prevStudents) =>
+                          prevStudents.map((s) =>
+                            s.person_id === student.person_id
+                              ? { ...s, guardian_middle_name: e.target.value }
+                              : s
+                          )
+                        )
+                      }
+                    />
+                  </Box>
 
-              <Box width="20%">
-                <div>EXT: <span style={{ color: "red" }}>*</span></div>
-                <FormControl sx={{ width: "100%", }} size="small">
-                  <InputLabel id="extension-label">EXT.</InputLabel>
-                  <Select
-                    labelId="extension-label"
-                    id="extension-select"
+                  {/* EXT */}
+                  <Box width="20%">
+                    <div>EXT: <span style={{ color: "red" }}>*</span></div>
+                    <FormControl sx={{ width: "100%" }} size="small">
+                      <InputLabel id={`extension-label-${student.person_id}`}>EXT.</InputLabel>
+                      <Select
+                        labelId={`extension-label-${student.person_id}`}
+                        id={`extension-select-${student.person_id}`}
+                        value={student.guardian_ext || ""}
+                        label="EXT."
+                        onChange={(e) =>
+                          setStudents((prevStudents) =>
+                            prevStudents.map((s) =>
+                              s.person_id === student.person_id
+                                ? { ...s, guardian_ext: e.target.value }
+                                : s
+                            )
+                          )
+                        }
+                      >
+                        <MenuItem value="">None</MenuItem>
+                        <MenuItem value="Jr.">Jr.</MenuItem>
+                        <MenuItem value="Sr.">Sr.</MenuItem>
+                        <MenuItem value="I">I</MenuItem>
+                        <MenuItem value="II">II</MenuItem>
+                        <MenuItem value="III">III</MenuItem>
+                        <MenuItem value="IV">IV</MenuItem>
+                        <MenuItem value="V">V</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Box>
 
-                    value={data[0]?.guardian_ext || ""}
-                    label="EXT."
-                    onChange={(e) =>
-                      setNewFamilyBackground({ ...newFamilyBackground, father_ext: e.target.value })
-                    }
-                  >
-                    <MenuItem value="">None</MenuItem>
-                    <MenuItem value="Jr.">Jr.</MenuItem>
-                    <MenuItem value="Sr.">Sr.</MenuItem>
-                    <MenuItem value="I">I</MenuItem>
-                    <MenuItem value="II">II</MenuItem>
-                    <MenuItem value="III">III</MenuItem>
-                    <MenuItem value="IV">IV</MenuItem>
-                    <MenuItem value="V">V</MenuItem>
-                  </Select>
-                </FormControl>
-              </Box>
+                  {/* Nickname */}
+                  <Box width="20%">
+                    <div>Nick Name:</div>
+                    <TextField
+                      label="Enter Nickname"
+                      style={{ width: "100%" }}
+                      size="small"
+                      value={student.guardian_nickname || ""}
+                      onChange={(e) =>
+                        setStudents((prevStudents) =>
+                          prevStudents.map((s) =>
+                            s.person_id === student.person_id
+                              ? { ...s, guardian_nickname: e.target.value }
+                              : s
+                          )
+                        )
+                      }
+                    />
+                  </Box>
+                </Box>
+              ))}
 
-              <Box width="20%">
-                <div>Nick Name:</div>
-                <TextField
-                  label="Enter Nickname"
-                  style={{ width: "100%" }}
-                  size="small"
-                  value={data[0]?.guardian_nickname || ""}
-                  onChange={(e) =>
-                    setNewFamilyBackground({ ...newFamilyBackground, guardian_nickname: e.target.value })
-                  }
-                />
-              </Box>
             </Box>
 
             {/* Contact Info Header */}
@@ -1052,50 +1359,76 @@ const FamilyBackground = () => {
               Contact Information:
             </Typography>
 
-
-            <Box width="100%" marginTop="10px" display="flex" alignItems="center" gap={2}>
-              <div style={{ whiteSpace: "nowrap" }}>Guardian's Address:</div>
-              <TextField
-                label="Enter Guardian Address"
-                fullWidth
-                size="small"
-                value={data[0]?.guardian_address || ""}
-                onChange={(e) =>
-                  setNewFamilyBackground({ ...newFamilyBackground, guardian_email: e.target.value })
-                }
-              />
-            </Box>
-
-
-
-            <Box display="flex" gap={2} width="100%" marginTop="10px">
-              <Box width="48%" display="flex" alignItems="center" gap={1} style={{ marginRight: "50px" }}>
-                <div style={{ whiteSpace: "nowrap", marginRight: "30px" }}>Contact Number:</div>+63
+            {/* Guardian's Address Row */}
+            {students.map((student) => (
+              <Box key={student.person_id} width="100%" marginTop="10px" display="flex" alignItems="center" gap={2}>
+                <div style={{ whiteSpace: "nowrap" }}>Guardian's Address:</div>
                 <TextField
-                  label="9xxxxxxxxx"
-                  fullWidth
-
-                  size="small"
-                  value={data[0]?.guardian_contact || ""}
-                  onChange={(e) =>
-                    setNewFamilyBackground({ ...newFamilyBackground, guardian_contact: e.target.value })
-                  }
-                />
-              </Box>
-
-              <Box width="48%" display="flex" alignItems="center" gap={1}  >
-                <div style={{ whiteSpace: "nowrap" }}>Email Address:</div>
-                <TextField
-                  label="Enter Email Address"
+                  label="Enter Guardian Address"
                   fullWidth
                   size="small"
-                  value={data[0]?.guardian_email || ""}
-                  onChange={(e) =>
-                    setNewFamilyBackground({ ...newFamilyBackground, guardian_email: e.target.value })
-                  }
+                  value={student.guardian_address || ""}
+                  onChange={(e) => {
+                    const updatedStudent = {
+                      ...student,
+                      guardian_address: e.target.value,
+                    };
+                    setStudents((prev) =>
+                      prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                    );
+                    updateItem(updatedStudent); // if needed, call updateItem to update global state or make API call
+                  }}
                 />
               </Box>
-            </Box>
+            ))}
+
+
+
+            {/* Contact Number and Email Address */}
+            {students.map((student) => (
+              <Box key={student.person_id} display="flex" gap={2} width="100%" marginTop="10px">
+                <Box width="48%" display="flex" alignItems="center" gap={1} style={{ marginRight: "50px" }}>
+                  <div style={{ whiteSpace: "nowrap", marginRight: "30px" }}>Contact Number:</div>+63
+                  <TextField
+                    label="9xxxxxxxxx"
+                    fullWidth
+                    size="small"
+                    value={student.guardian_contact || ""}
+                    onChange={(e) => {
+                      const updatedStudent = {
+                        ...student,
+                        guardian_contact: e.target.value,
+                      };
+                      setStudents((prev) =>
+                        prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                      );
+                      updateItem(updatedStudent);
+                    }}
+                  />
+                </Box>
+
+                <Box width="48%" display="flex" alignItems="center" gap={1}>
+                  <div style={{ whiteSpace: "nowrap" }}>Email Address:</div>
+                  <TextField
+                    label="Enter Email Address"
+                    fullWidth
+                    size="small"
+                    value={student.guardian_email || ""}
+                    onChange={(e) => {
+                      const updatedStudent = {
+                        ...student,
+                        guardian_email: e.target.value,
+                      };
+                      setStudents((prev) =>
+                        prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                      );
+                      updateItem(updatedStudent);
+                    }}
+                  />
+                </Box>
+              </Box>
+            ))}
+
           </Box>
           < br />
           <hr style={{ color: "yellow" }} className="my-4 border-t border-red-300" />
@@ -1103,27 +1436,41 @@ const FamilyBackground = () => {
             Family Annual Income:
           </Typography>
 
-          <FormControl fullWidth style={{ marginTop: '10px' }}>
-            <InputLabel id="family-income-label">Family Annual Income</InputLabel>
-            <Select
-              labelId="family-income-label"
-              value={data[0]?.annual_income || ""}
-              label="Family Annual Income"
-              style={{ width: "100%", marginTop: "5px" }}
-              size="small"
-              onChange={(e) =>
-                setNewFamilyBackground({ ...newFamilyBackground, annual_income: e.target.value })
-              }
-            >
-              <MenuItem value="">--</MenuItem>
-              <MenuItem value="80,000 and below">80,000 and below</MenuItem>
-              <MenuItem value="80,000 to 135,000">80,000 above but not more than 135,000</MenuItem>
-              <MenuItem value="135,000 to 250,000">135,000 above but not more than 250,000</MenuItem>
-              <MenuItem value="250,000 to 500,000">250,000 above but not more than 500,000</MenuItem>
-              <MenuItem value="500,000 to 1,000,000">500,000 above but not more than 1,000,000</MenuItem>
-              <MenuItem value="1,000,000 and above">1,000,000 and above</MenuItem>
-            </Select>
-          </FormControl>
+          {students.map((student) => (
+            <FormControl fullWidth style={{ marginTop: '10px' }} size="small" required key={student.person_id}>
+              <InputLabel id={`family-income-label-${student.person_id}`}>Family Annual Income</InputLabel>
+              <Select
+                labelId={`family-income-label-${student.person_id}`}
+                id={`family-income-select-${student.person_id}`}
+                value={student.annual_income || ""}
+                label="Family Annual Income"
+                style={{ width: "100%", marginTop: "5px" }}
+                onChange={(e) => {
+                  const updatedIncome = e.target.value;
+                  const updatedStudent = { ...student, annual_income: updatedIncome };
+
+                  // Update local state
+                  setStudents((prevStudents) =>
+                    prevStudents.map((s) =>
+                      s.person_id === student.person_id ? updatedStudent : s
+                    )
+                  );
+
+                  // Immediately update backend
+                  updateItem(updatedStudent);
+                }}
+              >
+                <MenuItem value="">--</MenuItem>
+                <MenuItem value="80,000 and below">80,000 and below</MenuItem>
+                <MenuItem value="80,000 to 135,000">80,000 above but not more than 135,000</MenuItem>
+                <MenuItem value="135,000 to 250,000">135,000 above but not more than 250,000</MenuItem>
+                <MenuItem value="250,000 to 500,000">250,000 above but not more than 500,000</MenuItem>
+                <MenuItem value="500,000 to 1,000,000">500,000 above but not more than 1,000,000</MenuItem>
+                <MenuItem value="1,000,000 and above">1,000,000 and above</MenuItem>
+              </Select>
+            </FormControl>
+          ))}
+
 
 
           <Box display="flex" justifyContent="space-between" mt={4}>

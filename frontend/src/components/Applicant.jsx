@@ -47,7 +47,6 @@ const ApplicantForm = () => {
   };
 
   const [students, setStudents] = useState([]);
-  const [newStudent, setNewStudent] = useState({ first_name: "", last_name: "" });
 
   // Fetch all students
   useEffect(() => {
@@ -1527,49 +1526,73 @@ const ApplicantForm = () => {
 
 
           {/* Present Address Fields (3 in a row) */}
-          <Box display="flex" gap={2} mt={1}>
-            <Box width="32%">
-              <div>Present Address Street: <span style={{ color: "red" }}>*</span></div>
-              <TextField
-                label="Enter Street"
-                required
-                sx={{ width: "100%", marginRight: "20px" }}
-                size="small"
-                value={data[0]?.presentStreet || ""}
-                onChange={(e) =>
-                  setNewApplicant({ ...newApplicant, presentAddress: e.target.value })
-                }
-              />
-            </Box>
+          {students.map((student) => (
+            <Box key={student.person_id} display="flex" gap={2} mt={1}>
+              {/* Present Address Street */}
+              <Box width="32%">
+                <div>
+                  Present Address Street: <span style={{ color: "red" }}>*</span>
+                </div>
+                <TextField
+                  label="Enter Street"
+                  required
+                  fullWidth
+                  size="small"
+                  value={student.presentStreet || ""}
+                  onChange={(e) => {
+                    const updatedStudent = { ...student, presentStreet: e.target.value };
+                    setStudents((prev) =>
+                      prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                    );
+                    updateItem(updatedStudent);
+                  }}
+                />
+              </Box>
 
-            <Box width="32%">
-              <div>Barangay: <span style={{ color: "red" }}>*</span></div>
-              <TextField
-                label="Enter Barangay"
-                required
-                sx={{ width: "100%", marginRight: "20px" }}
-                size="small"
-                value={data[0]?.presentBarangay || ""}
-                onChange={(e) =>
-                  setNewApplicant({ ...newApplicant, barangay: e.target.value })
-                }
-              />
-            </Box>
+              {/* Barangay */}
+              <Box width="32%">
+                <div>
+                  Barangay: <span style={{ color: "red" }}>*</span>
+                </div>
+                <TextField
+                  label="Enter Barangay"
+                  required
+                  fullWidth
+                  size="small"
+                  value={student.presentBarangay || ""}
+                  onChange={(e) => {
+                    const updatedStudent = { ...student, presentBarangay: e.target.value };
+                    setStudents((prev) =>
+                      prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                    );
+                    updateItem(updatedStudent);
+                  }}
+                />
+              </Box>
 
-            <Box width="33%">
-              <div>ZIP Code: <span style={{ color: "red" }}>*</span></div>
-              <TextField
-                label="Enter ZIP Code"
-                required
-                sx={{ width: "100%", marginRight: "20px" }}
-                size="small"
-                value={data[0]?.presentZipCode || ""}
-                onChange={(e) =>
-                  setNewApplicant({ ...newApplicant, zipCode: e.target.value })
-                }
-              />
+              {/* ZIP Code */}
+              <Box width="33%">
+                <div>
+                  ZIP Code: <span style={{ color: "red" }}>*</span>
+                </div>
+                <TextField
+                  label="Enter ZIP Code"
+                  required
+                  fullWidth
+                  size="small"
+                  value={student.presentZipCode || ""}
+                  onChange={(e) => {
+                    const updatedStudent = { ...student, presentZipCode: e.target.value };
+                    setStudents((prev) =>
+                      prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                    );
+                    updateItem(updatedStudent);
+                  }}
+                />
+              </Box>
             </Box>
-          </Box>
+          ))}
+
 
           {/* Region */}
           <Box width="100%" mt={1}>
@@ -1639,19 +1662,32 @@ const ApplicantForm = () => {
           </Box>
 
           {/* DSWD Household Number */}
-          <Box width="100%" mt={1}>
-            <div>DSWD Household Number: <span style={{ color: "red" }}>*</span></div>
-            <TextField
-              label="Enter Household Number"
-              required
-              sx={{ width: "100%", marginRight: "20px" }}
-              size="small"
-              value={data[0]?.presentDswdHouseholdNumber || ""}
-              onChange={(e) =>
-                setNewApplicant({ ...newApplicant, dswdHouseholdNumber: e.target.value })
-              }
-            />
-          </Box>
+          {students.map((student) => (
+            <Box key={student.person_id} width="100%" mt={1}>
+              <div>
+                DSWD Household Number: <span style={{ color: "red" }}>*</span>
+              </div>
+              <TextField
+                label="Enter Household Number"
+                required
+                fullWidth
+                size="small"
+                value={student.presentDswdHouseholdNumber || ""}
+                onChange={(e) => {
+                  const updatedStudent = {
+                    ...student,
+                    presentDswdHouseholdNumber: e.target.value,
+                  };
+                  setStudents((prev) =>
+                    prev.map((s) =>
+                      s.person_id === student.person_id ? updatedStudent : s
+                    )
+                  );
+                  updateItem(updatedStudent);
+                }}
+              />
+            </Box>
+          ))}
 
 
           <br />
@@ -1675,49 +1711,64 @@ const ApplicantForm = () => {
 
 
           {/* Permanent Address Row Fields */}
-          <Box display="flex" gap={2} mt={1}>
-            <Box width="32%">
-              <div>Permanent Address Street: <span style={{ color: "red" }}>*</span></div>
-              <TextField
-                label="Enter Street"
-                required
-                sx={{ width: "100%", marginRight: "20px" }}
-                size="small"
-                value={data[0]?.permanentStreet || ""}
-                onChange={(e) =>
-                  setNewApplicant({ ...newApplicant, permanentAddress: e.target.value })
-                }
-              />
-            </Box>
+          {students.map((student) => (
+            <Box key={student.person_id} display="flex" gap={2} mt={1}>
+              <Box width="32%">
+                <div>Permanent Address Street: <span style={{ color: "red" }}>*</span></div>
+                <TextField
+                  label="Enter Street"
+                  required
+                  sx={{ width: "100%", marginRight: "20px" }}
+                  size="small"
+                  value={student.permanentStreet || ""}
+                  onChange={(e) => {
+                    const updatedStudent = { ...student, permanentStreet: e.target.value };
+                    setStudents((prev) =>
+                      prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                    );
+                    updateItem(updatedStudent);
+                  }}
+                />
+              </Box>
 
-            <Box width="32%">
-              <div>Barangay: <span style={{ color: "red" }}>*</span></div>
-              <TextField
-                label="Enter Barangay"
-                required
-                sx={{ width: "100%", marginRight: "20px" }}
-                size="small"
-                value={data[0]?.permanentBarangay || ""}
-                onChange={(e) =>
-                  setNewApplicant({ ...newApplicant, barangay: e.target.value })
-                }
-              />
-            </Box>
+              <Box width="32%">
+                <div>Barangay: <span style={{ color: "red" }}>*</span></div>
+                <TextField
+                  label="Enter Barangay"
+                  required
+                  sx={{ width: "100%", marginRight: "20px" }}
+                  size="small"
+                  value={student.permanentBarangay || ""}
+                  onChange={(e) => {
+                    const updatedStudent = { ...student, permanentBarangay: e.target.value };
+                    setStudents((prev) =>
+                      prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                    );
+                    updateItem(updatedStudent);
+                  }}
+                />
+              </Box>
 
-            <Box width="33%">
-              <div>ZIP Code: <span style={{ color: "red" }}>*</span></div>
-              <TextField
-                label="Enter ZIP Code"
-                required
-                sx={{ width: "100%", marginRight: "20px" }}
-                size="small"
-                value={data[0]?.permanentZipCode || ""}
-                onChange={(e) =>
-                  setNewApplicant({ ...newApplicant, zipCode: e.target.value })
-                }
-              />
+              <Box width="33%">
+                <div>ZIP Code: <span style={{ color: "red" }}>*</span></div>
+                <TextField
+                  label="Enter ZIP Code"
+                  required
+                  sx={{ width: "100%", marginRight: "20px" }}
+                  size="small"
+                  value={student.permanentZipCode || ""}
+                  onChange={(e) => {
+                    const updatedStudent = { ...student, permanentZipCode: e.target.value };
+                    setStudents((prev) =>
+                      prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                    );
+                    updateItem(updatedStudent);
+                  }}
+                />
+              </Box>
             </Box>
-          </Box>
+          ))}
+
 
           <Box width="100%" mt={1}>
             <div>Region: <span style={{ color: "red" }}>*</span></div>
@@ -1782,19 +1833,31 @@ const ApplicantForm = () => {
             />
           </Box>
 
-          <Box width="100%" mt={1}>
-            <div>DSWD Household Number: <span style={{ color: "red" }}>*</span></div>
-            <TextField
-              label="Enter Household Number"
-              required
-              sx={{ width: "100%", marginRight: "20px" }}
-              size="small"
-              value={data[0]?.permanentDswdHouseholdNumber || ""}
-              onChange={(e) =>
-                setNewApplicant({ ...newApplicant, dswdHouseholdNumber: e.target.value })
-              }
-            />
-          </Box>
+          {students.map((student) => (
+            <Box key={student.person_id} width="100%" mt={1}>
+              <div>DSWD Household Number: <span style={{ color: "red" }}>*</span></div>
+              <TextField
+                label="Enter Household Number"
+                required
+                sx={{ width: "100%", marginRight: "20px" }}
+                size="small"
+                value={student.permanentDswdHouseholdNumber || ""}
+                onChange={(e) => {
+                  const updatedStudent = {
+                    ...student,
+                    permanentDswdHouseholdNumber: e.target.value,
+                  };
+                  setStudents((prev) =>
+                    prev.map((s) =>
+                      s.person_id === student.person_id ? updatedStudent : s
+                    )
+                  );
+                  updateItem(updatedStudent);
+                }}
+              />
+            </Box>
+          ))}
+
 
           <Modal open={open} onClose={handleClose}>
             <Box

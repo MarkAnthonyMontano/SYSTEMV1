@@ -59,26 +59,7 @@ const OtherInformation = () => {
         }
     };
 
-    const addOrUpdateEducationalAttainment = async () => {
-        try {
-            if (editingEducationalAttainment) {
-                await axios.put(
-                    `http://localhost:5000/educational_attainment/${EducationalAttainment}`,
-                    newEducationalAttainment
-                );
-            } else {
-                if (!newEducationalAttainment.schoolLevel) return;
-                await axios.post("http://localhost:5000/educational_attainment", newEducationalAttainment);
-            }
-            setEditingEducationalAttainment(null);
-            fetchEducationalAttainment();
-            resetNewEducationalAttainment();
-            setActiveStep(0); // Reset stepper after submission
-        } catch (error) {
-            console.error("Failed to add or update educational attainment:", error);
-        }
-    };
-
+ 
     const resetNewEducationalAttainment = () => {
         setNewEducationalAttainment({
             id: "",

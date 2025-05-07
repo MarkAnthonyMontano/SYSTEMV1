@@ -14,6 +14,8 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { Link } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 
+const API_URL = "http://localhost:5000/person_table";
+
 const HealthMedicalRecords = () => {
   const getPersonIdFromToken = () => {
     const token = localStorage.getItem("token");
@@ -44,6 +46,38 @@ const HealthMedicalRecords = () => {
 
     fetchMedicalRecords();
   }, [personID]);
+
+  const [students, setStudents] = useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost:5000/person_table")
+      .then(res => res.json())
+      .then(data => setData(data))
+      .catch(err => console.error(err));
+  }, []);
+
+
+  useEffect(() => {
+    axios
+      .get(API_URL)
+      .then((res) => setStudents(res.data))
+      .catch((err) => console.error("Fetch error:", err));
+  }, []);
+
+
+
+  const updateItem = (student) => {
+    axios
+      .put(`${API_URL}/${student.person_id}`, student)
+      .then((res) => {
+        setStudents((prevStudents) =>
+          prevStudents.map((s) =>
+            s.person_id === student.person_id ? res.data : s
+          )
+        );
+      })
+      .catch((err) => console.error("Update error:", err));
+  };
 
   useEffect(() => {
     fetch("http://localhost:5000/person_table")
@@ -212,339 +246,320 @@ const HealthMedicalRecords = () => {
             <hr style={{ color: "yellow" }} className="my-4 border-t border-red-300" />
 
             {/* Section I */}
-            <div style={{ marginBottom: "16px" }}>
-              <p style={{ marginBottom: "8px" }}>
-                I. Do you have any of the following symptoms today?{" "}
-                <FormGroup row sx={{ ml: 2 }}>
-                  <FormControlLabel
-                    control={<Checkbox checked={data[0]?.cough === 1} />}
-                    label="Cough"
-                    sx={{ ml: 5 }}
-                  />
-                  <FormControlLabel
-                    control={<Checkbox checked={data[0]?.colds === 1} />}
-                    label="Colds"
-                    sx={{ ml: 5 }}
-                  />
-                  <FormControlLabel
-                    control={<Checkbox checked={data[0]?.fever === 1} />}
-                    label="Fever"
-                    sx={{ ml: 5 }}
-                  />
-                </FormGroup>
-              </p>
-            </div>
+            {students.map((student) => (
+              <div key={student.person_id} style={{ marginBottom: "16px" }}>
+                <p style={{ marginBottom: "8px" }}>
+                  I. Do you have any of the following symptoms today?
+                  <FormGroup row sx={{ ml: 2 }}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={student.cough === 1}
+                          onChange={(e) => {
+                            const updatedStudent = {
+                              ...student,
+                              cough: e.target.checked ? 1 : 0,
+                            };
+                            setStudents((prev) =>
+                              prev.map((s) =>
+                                s.person_id === student.person_id ? updatedStudent : s
+                              )
+                            );
+                            updateItem(updatedStudent);
+                          }}
+                        />
+                      }
+                      label="Cough"
+                      sx={{ ml: 5 }}
+                    />
+
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={student.colds === 1}
+                          onChange={(e) => {
+                            const updatedStudent = {
+                              ...student,
+                              colds: e.target.checked ? 1 : 0,
+                            };
+                            setStudents((prev) =>
+                              prev.map((s) =>
+                                s.person_id === student.person_id ? updatedStudent : s
+                              )
+                            );
+                            updateItem(updatedStudent);
+                          }}
+                        />
+                      }
+                      label="Colds"
+                      sx={{ ml: 5 }}
+                    />
+
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={student.fever === 1}
+                          onChange={(e) => {
+                            const updatedStudent = {
+                              ...student,
+                              fever: e.target.checked ? 1 : 0,
+                            };
+                            setStudents((prev) =>
+                              prev.map((s) =>
+                                s.person_id === student.person_id ? updatedStudent : s
+                              )
+                            );
+                            updateItem(updatedStudent);
+                          }}
+                        />
+                      }
+                      label="Fever"
+                      sx={{ ml: 5 }}
+                    />
+                  </FormGroup>
+                </p>
+              </div>
+            ))}
 
 
 
+            {/* Section II */}
+            {students.map((student) => (
+              <div key={student.person_id} style={{ marginBottom: "16px" }}>
+                <p style={{ marginBottom: "8px" }}>
+                  II. MEDICAL HISTORY: Have you suffered from, or been told you had, any of the following conditions:
+                </p>
 
+                <table
+                  style={{
+                    width: "100%",
+                    border: "1px solid black",
+                    borderCollapse: "collapse",
+                    fontFamily: "Arial, Helvetica, sans-serif",
+                    tableLayout: "fixed",
+                  }}
+                >
+                  <tbody>
+                    {/* Headers */}
+                    <tr>
+                      <td colSpan={15} style={{ border: "1px solid black", height: "0.25in" }}></td>
+                      <td colSpan={12} style={{ border: "1px solid black", textAlign: "center" }}>Yes or No</td>
 
-            <div style={{ marginBottom: "16px" }}>
-              <p style={{ marginBottom: "8px" }}>
-                II. MEDICAL HISTORY: Have you suffered from, or been told you had, any of the following conditions:
-              </p>
+                      <td colSpan={15} style={{ border: "1px solid black", height: "0.25in" }}></td>
+                      <td colSpan={12} style={{ border: "1px solid black", textAlign: "center" }}>Yes or No</td>
 
-              <table
-                style={{
-                  width: "100%",
-                  border: "1px solid black",
-                  borderCollapse: "collapse",
-                  fontFamily: "Arial, Helvetica, sans-serif",
-                  tableLayout: "fixed",
-                }}
-              >
-                <tbody>
-                  <tr>
-                    <td colSpan={15} style={{ border: "1px solid black", height: "0.25in" }}></td>
-                    <td colSpan={12} style={{ border: "1px solid black", textAlign: "center" }}>Yes or No</td>
+                      <td colSpan={15} style={{ border: "1px solid black", height: "0.25in" }}></td>
+                      <td colSpan={12} style={{ border: "1px solid black", textAlign: "center" }}>Yes or No</td>
+                    </tr>
 
-                    <td colSpan={15} style={{ border: "1px solid black", height: "0.25in" }}></td>
-                    <td colSpan={12} style={{ border: "1px solid black", textAlign: "center" }}>Yes or No</td>
-
-                    <td colSpan={15} style={{ border: "1px solid black", height: "0.25in" }}></td>
-                    <td colSpan={12} style={{ border: "1px solid black", textAlign: "center" }}>Yes or No</td>
-                  </tr>
-
-                  <tr>
-                    <td colSpan={15} style={cellStyle}>Asthma</td>
-                    <td colSpan={12} style={cellStyle}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.asthma === 1} />}
-                          label="Yes"
-                        />
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.asthma === 0} />}
-                          label="No"
-                        />
-                      </div>
-                    </td>
-                    <td colSpan={15} style={cellStyle}>Fainting Spells and seizures</td>
-                    <td colSpan={12} style={cellStyle}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.faintingSpells === 1} />}
-                          label="Yes"
-                        />
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.faintingSpells === 0} />}
-                          label="No"
-                        />
-                      </div>
-                    </td>
-                    <td colSpan={15} style={cellStyle}>Heart Disease</td>
-                    <td colSpan={12} style={cellStyle}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.heartDisease === 1} />}
-                          label="Yes"
-                        />
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.heartDisease === 0} />}
-                          label="No"
-                        />
-                      </div>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td colSpan={15} style={cellStyle}>Tuberculosis</td>
-                    <td colSpan={12} style={cellStyle}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.tuberculosis === 1} />}
-                          label="Yes"
-                        />
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.tuberculosis === 0} />}
-                          label="No"
-                        />
-                      </div>
-                    </td>
-                    <td colSpan={15} style={cellStyle}>Frequent Headaches</td>
-                    <td colSpan={12} style={cellStyle}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.frequentHeadaches === 1} />}
-                          label="Yes"
-                        />
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.frequentHeadaches === 0} />}
-                          label="No"
-                        />
-                      </div>
-                    </td>
-                    <td colSpan={15} style={cellStyle}>Hernia</td>
-                    <td colSpan={12} style={cellStyle}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.hernia === 1} />}
-                          label="Yes"
-                        />
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.hernia === 0} />}
-                          label="No"
-                        />
-                      </div>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td colSpan={15} style={cellStyle}>Chronic cough</td>
-                    <td colSpan={12} style={cellStyle}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.chronicCough === 1} />}
-                          label="Yes"
-                        />
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.chronicCough === 0} />}
-                          label="No"
-                        />
-                      </div>
-                    </td>
-                    <td colSpan={15} style={cellStyle}>Head or neck injury</td>
-                    <td colSpan={12} style={cellStyle}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.headNeckInjury === 1} />}
-                          label="Yes"
-                        />
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.headNeckInjury === 0} />}
-                          label="No"
-                        />
-                      </div>
-                    </td>
-                    <td colSpan={15} style={cellStyle}>H.I.V</td>
-                    <td colSpan={12} style={cellStyle}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.hiv === 1} />}
-                          label="Yes"
-                        />
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.hiv === 0} />}
-                          label="No"
-                        />
-                      </div>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td colSpan={15} style={cellStyle}>High blood pressure</td>
-                    <td colSpan={12} style={cellStyle}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.highBloodPressure === 1} />}
-                          label="Yes"
-                        />
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.highBloodPressure === 0} />}
-                          label="No"
-                        />
-                      </div>
-                    </td>
-                    <td colSpan={15} style={cellStyle}>Diabetes Mellitus</td>
-                    <td colSpan={12} style={cellStyle}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.diabetesMellitus === 1} />}
-                          label="Yes"
-                        />
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.diabetesMellitus === 0} />}
-                          label="No"
-                        />
-                      </div>
-                    </td>
-                    <td colSpan={15} style={cellStyle}>Allergies</td>
-                    <td colSpan={12} style={cellStyle}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.allergies === 1} />}
-                          label="Yes"
-                        />
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.allergies === 0} />}
-                          label="No"
-                        />
-                      </div>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td colSpan={15} style={cellStyle}>Cancer</td>
-                    <td colSpan={12} style={cellStyle}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.cancer === 1} />}
-                          label="Yes"
-                        />
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.cancer === 0} />}
-                          label="No"
-                        />
-                      </div>
-                    </td>
-                    <td colSpan={15} style={cellStyle}>Smoking of cigarette/day</td>
-                    <td colSpan={12} style={cellStyle}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.smokingCigarette === 1} />}
-                          label="Yes"
-                        />
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.smokingCigarette === 0} />}
-                          label="No"
-                        />
-                      </div>
-                    </td>
-                    <td colSpan={15} style={cellStyle}>Alcohol Drinking</td>
-                    <td colSpan={12} style={cellStyle}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.alcoholDrinking === 1} />}
-                          label="Yes"
-                        />
-                        <FormControlLabel
-                          control={<Checkbox checked={data[0]?.alcoholDrinking === 0} />}
-                          label="No"
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
+                    {/* Rows (repeat pattern) */}
+                    {[
+                      { label: "Asthma", key: "asthma" },
+                      { label: "Fainting Spells and seizures", key: "faintingSpells" },
+                      { label: "Heart Disease", key: "heartDisease" },
+                      { label: "Tuberculosis", key: "tuberculosis" },
+                      { label: "Frequent Headaches", key: "frequentHeadaches" },
+                      { label: "Hernia", key: "hernia" },
+                      { label: "Chronic cough", key: "chronicCough" },
+                      { label: "Head or neck injury", key: "headNeckInjury" },
+                      { label: "H.I.V", key: "hiv" },
+                      { label: "High blood pressure", key: "highBloodPressure" },
+                      { label: "Diabetes Mellitus", key: "diabetesMellitus" },
+                      { label: "Allergies", key: "allergies" },
+                      { label: "Cancer", key: "cancer" },
+                      { label: "Smoking of cigarette/day", key: "smokingCigarette" },
+                      { label: "Alcohol Drinking", key: "alcoholDrinking" },
+                    ].reduce((rows, item, idx, arr) => {
+                      if (idx % 3 === 0) rows.push(arr.slice(idx, idx + 3));
+                      return rows;
+                    }, []).map((rowGroup, rowIndex) => (
+                      <tr key={rowIndex}>
+                        {rowGroup.map(({ label, key }) => (
+                          <React.Fragment key={key}>
+                            <td colSpan={15} style={cellStyle}>{label}</td>
+                            <td colSpan={12} style={cellStyle}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <FormControlLabel
+                                  control={
+                                    <Checkbox
+                                      checked={student[key] === 1}
+                                      onChange={(e) => {
+                                        const updatedStudent = {
+                                          ...student,
+                                          [key]: e.target.checked ? 1 : 0,
+                                        };
+                                        setStudents((prev) =>
+                                          prev.map((s) =>
+                                            s.person_id === student.person_id ? updatedStudent : s
+                                          )
+                                        );
+                                        updateItem(updatedStudent);
+                                      }}
+                                    />
+                                  }
+                                  label="Yes"
+                                />
+                                <FormControlLabel
+                                  control={
+                                    <Checkbox
+                                      checked={student[key] === 0}
+                                      onChange={(e) => {
+                                        const updatedStudent = {
+                                          ...student,
+                                          [key]: e.target.checked ? 0 : 1,
+                                        };
+                                        setStudents((prev) =>
+                                          prev.map((s) =>
+                                            s.person_id === student.person_id ? updatedStudent : s
+                                          )
+                                        );
+                                        updateItem(updatedStudent);
+                                      }}
+                                    />
+                                  }
+                                  label="No"
+                                />
+                              </div>
+                            </td>
+                          </React.Fragment>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ))}
 
 
 
 
 
             {/* Hospitalization History */}
-            <Box mt={2} display="flex" alignItems="center" flexWrap="wrap">
-              <span style={{ marginRight: '16px' }}>
-                Do you have any previous history of hospitalization or operation?
-              </span>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <FormControlLabel
-                  control={<Checkbox checked={data[0]?.hospitalized === 1} />}
-                  label="Yes"
-                />
-                <FormControlLabel
-                  control={<Checkbox checked={data[0]?.hospitalized === 0} />}
-                  label="No"
-                />
-              </div>
-            </Box>
+            {students.map((student) => (
+              <Box key={student.person_id} mt={2} display="flex" alignItems="center" flexWrap="wrap">
+                <span style={{ marginRight: '16px' }}>
+                  Do you have any previous history of hospitalization or operation?
+                </span>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={student.hospitalized === 1}
+                        onChange={(e) => {
+                          const updatedStudent = {
+                            ...student,
+                            hospitalized: e.target.checked ? 1 : 0,
+                          };
+                          setStudents((prev) =>
+                            prev.map((s) =>
+                              s.person_id === student.person_id ? updatedStudent : s
+                            )
+                          );
+                          updateItem(updatedStudent);
+                        }}
+                      />
+                    }
+                    label="Yes"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={student.hospitalized === 0}
+                        onChange={(e) => {
+                          const updatedStudent = {
+                            ...student,
+                            hospitalized: e.target.checked ? 0 : 1,
+                          };
+                          setStudents((prev) =>
+                            prev.map((s) =>
+                              s.person_id === student.person_id ? updatedStudent : s
+                            )
+                          );
+                          updateItem(updatedStudent);
+                        }}
+                      />
+                    }
+                    label="No"
+                  />
+                </div>
+              </Box>
+            ))}
+
 
 
             {/* Input Field for Specific Condition if Yes */}
-            <div style={{ marginTop: "8px", display: "flex", alignItems: "center" }}>
-              <label style={{ marginRight: "8px" }}>IF YES, PLEASE SPECIFY:</label>
-              <input
-                type="text"
-                style={{
-                  width: "50%",
-                  padding: "8px",
-                  fontSize: "1rem",
-                  border: "1px solid #ccc",
-                  borderRadius: "8px",
-                  backgroundColor: "white",
-                  color: "black",
-                  outline: "none",
-                  boxSizing: "border-box",
-                }}
-                placeholder=""
-                value={data[0]?.hospitalizationDetails || ""}
-                name="specificCondition"  // This will map to the database column 'hospitalizationDetails'
-              />
-            </div>
+            {students.map((student) => (
+              <div key={student.person_id} style={{ marginTop: "8px", display: "flex", alignItems: "center" }}>
+                <label style={{ marginRight: "8px" }}>IF YES, PLEASE SPECIFY:</label>
+                <input
+                  type="text"
+                  style={{
+                    width: "50%",
+                    padding: "8px",
+                    fontSize: "1rem",
+                    border: "1px solid #ccc",
+                    borderRadius: "8px",
+                    backgroundColor: "white",
+                    color: "black",
+                    outline: "none",
+                    boxSizing: "border-box",
+                  }}
+                  placeholder=""
+                  value={student.hospitalizationDetails || ""}
+                  onChange={(e) => {
+                    const updatedStudent = {
+                      ...student,
+                      hospitalizationDetails: e.target.value,
+                    };
+                    setStudents((prev) =>
+                      prev.map((s) =>
+                        s.person_id === student.person_id ? updatedStudent : s
+                      )
+                    );
+                    updateItem(updatedStudent);
+                  }}
+                  name="specificCondition" // This will map to the database column 'hospitalizationDetails'
+                />
+              </div>
+            ))}
 
             {/* Medications Input */}
-            <div style={{ marginTop: "16px" }}>
-              <p>III. MEDICATIONS:</p>
-              <textarea
-                style={{
-                  width: "100%",
-                  padding: "8px",
-                  fontSize: "1rem",
-                  border: "1px solid #ccc",
-                  borderRadius: "8px",
-                  backgroundColor: "white",
-                  color: "black",
-                  outline: "none",
-                  resize: "vertical",
-                  boxSizing: "border-box",
-                }}
-                value={data[0]?.medications || ""}
-                rows="2"
-                placeholder=""
-                name="medications"  // This will map to the database column 'medications'
-              />
-            </div>
+            {students.map((student) => (
+              <div key={student.person_id} style={{ marginTop: "16px" }}>
+                <p>III. MEDICATIONS:</p>
+                <textarea
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    fontSize: "1rem",
+                    border: "1px solid #ccc",
+                    borderRadius: "8px",
+                    backgroundColor: "white",
+                    color: "black",
+                    outline: "none",
+                    resize: "vertical",
+                    boxSizing: "border-box",
+                  }}
+                  value={student.medications || ""}  // Bind value to the student's medications
+                  rows="2"
+                  placeholder=""
+                  name="medications"  // This will map to the database column 'medications'
+                  onChange={(e) => {
+                    const updatedStudent = {
+                      ...student,
+                      medications: e.target.value,  // Update the medications for this student
+                    };
+                    setStudents((prev) =>
+                      prev.map((s) =>
+                        s.person_id === student.person_id ? updatedStudent : s
+                      )
+                    );
+                    updateItem(updatedStudent);  // Optionally call this function to persist changes
+                  }}
+                />
+              </div>
+            ))}
+
 
 
 
@@ -571,43 +586,81 @@ const HealthMedicalRecords = () => {
                         padding: "8px",
                       }}
                     >
-                      <Box display="flex" alignItems="center" gap={2} flexWrap="nowrap">
-                        <span>A. Do you have history of COVID-19?</span>
+                      {students.map((student) => (
+                        <Box key={student.person_id} display="flex" alignItems="center" gap={2} flexWrap="nowrap">
+                          <span>A. Do you have history of COVID-19?</span>
 
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              name="covidHistoryYes"
-                              checked={data[0]?.hadCovid === 1}
-                            />
-                          }
-                          label="YES"
-                        />
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              name="covidHistoryNo"
-                              checked={data[0]?.hadCovid === 0}
-                            />
-                          }
-                          label="NO"
-                        />
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                name="covidHistoryYes"
+                                checked={student.hadCovid === 1}  // Bind to student's hadCovid value
+                                onChange={(e) => {
+                                  const updatedStudent = {
+                                    ...student,
+                                    hadCovid: e.target.checked ? 1 : 0,  // Update hadCovid status based on checkbox state
+                                  };
+                                  setStudents((prev) =>
+                                    prev.map((s) =>
+                                      s.person_id === student.person_id ? updatedStudent : s
+                                    )
+                                  );
+                                  updateItem(updatedStudent);  // Optionally call this to persist changes
+                                }}
+                              />
+                            }
+                            label="YES"
+                          />
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                name="covidHistoryNo"
+                                checked={student.hadCovid === 0}  // Bind to student's hadCovid value
+                                onChange={(e) => {
+                                  const updatedStudent = {
+                                    ...student,
+                                    hadCovid: e.target.checked ? 0 : 1,  // Update hadCovid status based on checkbox state
+                                  };
+                                  setStudents((prev) =>
+                                    prev.map((s) =>
+                                      s.person_id === student.person_id ? updatedStudent : s
+                                    )
+                                  );
+                                  updateItem(updatedStudent);  // Optionally call this to persist changes
+                                }}
+                              />
+                            }
+                            label="NO"
+                          />
 
-                        <span>IF YES, WHEN:</span>
-                        <input
-                          type="date"
-                          value={data[0]?.covidDate || ""}
+                          <span>IF YES, WHEN:</span>
+                          <input
+                            type="date"
+                            value={student.covidDate || ""}  // Bind to student's covidDate value
+                            onChange={(e) => {
+                              const updatedStudent = {
+                                ...student,
+                                covidDate: e.target.value,  // Update covidDate field based on input value
+                              };
+                              setStudents((prev) =>
+                                prev.map((s) =>
+                                  s.person_id === student.person_id ? updatedStudent : s
+                                )
+                              );
+                              updateItem(updatedStudent);  // Optionally call this to persist changes
+                            }}
+                            style={{
+                              width: "200px",
+                              height: "50px",
+                              fontSize: "16px",
+                              padding: "10px",
+                              border: "1px solid #ccc",
+                              borderRadius: "4px",
+                            }}
+                          />
+                        </Box>
+                      ))}
 
-                          style={{
-                            width: "200px",
-                            height: "50px",
-                            fontSize: "16px",
-                            padding: "10px",
-                            border: "1px solid #ccc",
-                            borderRadius: "4px",
-                          }}
-                        />
-                      </Box>
                     </td>
                   </tr>
 
@@ -643,76 +696,180 @@ const HealthMedicalRecords = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          <tr>
-                            <td style={{ padding: "4px 0" }}>Brand</td>
-                            <td style={{ padding: "4px" }}>
-                              <input
-                                type="text"
-                                name="vaccine1Brand"
-                                value={data[0]?.vaccine1Brand || ""}
-                                style={inputStyle}
-                              />
-                            </td>
-                            <td style={{ padding: "4px" }}>
-                              <input
-                                type="text"
-                                name="vaccine2Brand"
-                                value={data[0]?.vaccine2Brand || ""}
-                                style={inputStyle}
-                              />
-                            </td>
-                            <td style={{ padding: "4px" }}>
-                              <input
-                                type="text"
-                                name="booster1Brand"
-                                value={data[0]?.booster1Brand || ""}
-                                style={inputStyle}
-                              />
-                            </td>
-                            <td style={{ padding: "4px" }}>
-                              <input
-                                type="text"
-                                name="booster2Brand"
-                                value={data[0]?.booster2Brand || ""}
-                                style={inputStyle}
-                              />
-                            </td>
-                          </tr>
-                          <tr>
-                            <td style={{ padding: "4px 0" }}>Date</td>
-                            <td style={{ padding: "4px" }}>
-                              <input
-                                type="date"
-                                name="vaccine1Date"
-                                value={data[0]?.vaccine1Date || ""}
-                                style={inputStyle}
-                              />
-                            </td>
-                            <td style={{ padding: "4px" }}>
-                              <input
-                                type="date"
-                                name="vaccine2Date"
-                                value={data[0]?.vaccine2Date || ""}
-                                style={inputStyle}
-                              />
-                            </td>
-                            <td style={{ padding: "4px" }}>
-                              <input
-                                type="date"
-                                name="booster1Date"
-                                value={data[0]?.booster1Date || ""}
-                                style={inputStyle}
-                              />
-                            </td>
-                            <td style={{ padding: "4px" }}>
-                              <input
-                                type="date"
-                                name="booster2Date"
-                                value={data[0]?.booster2Date || ""}
-                                style={inputStyle}
-                              />
-                            </td>
-                          </tr>
+                          {students.map((student) => (
+                            <React.Fragment key={student.person_id}>
+                              {/* Vaccine Brand Row */}
+                              <tr>
+                                <td style={{ padding: "4px 0" }}>Brand</td>
+                                <td style={{ padding: "4px" }}>
+                                  <input
+                                    type="text"
+                                    name="vaccine1Brand"
+                                    value={student.vaccine1Brand || ""}
+                                    onChange={(e) => {
+                                      const updatedStudent = {
+                                        ...student,
+                                        vaccine1Brand: e.target.value,  // Update vaccine1Brand
+                                      };
+                                      setStudents((prev) =>
+                                        prev.map((s) =>
+                                          s.person_id === student.person_id ? updatedStudent : s
+                                        )
+                                      );
+                                      updateItem(updatedStudent);  // Optionally persist changes
+                                    }}
+                                    style={inputStyle}
+                                  />
+                                </td>
+                                <td style={{ padding: "4px" }}>
+                                  <input
+                                    type="text"
+                                    name="vaccine2Brand"
+                                    value={student.vaccine2Brand || ""}
+                                    onChange={(e) => {
+                                      const updatedStudent = {
+                                        ...student,
+                                        vaccine2Brand: e.target.value,  // Update vaccine2Brand
+                                      };
+                                      setStudents((prev) =>
+                                        prev.map((s) =>
+                                          s.person_id === student.person_id ? updatedStudent : s
+                                        )
+                                      );
+                                      updateItem(updatedStudent);  // Optionally persist changes
+                                    }}
+                                    style={inputStyle}
+                                  />
+                                </td>
+                                <td style={{ padding: "4px" }}>
+                                  <input
+                                    type="text"
+                                    name="booster1Brand"
+                                    value={student.booster1Brand || ""}
+                                    onChange={(e) => {
+                                      const updatedStudent = {
+                                        ...student,
+                                        booster1Brand: e.target.value,  // Update booster1Brand
+                                      };
+                                      setStudents((prev) =>
+                                        prev.map((s) =>
+                                          s.person_id === student.person_id ? updatedStudent : s
+                                        )
+                                      );
+                                      updateItem(updatedStudent);  // Optionally persist changes
+                                    }}
+                                    style={inputStyle}
+                                  />
+                                </td>
+                                <td style={{ padding: "4px" }}>
+                                  <input
+                                    type="text"
+                                    name="booster2Brand"
+                                    value={student.booster2Brand || ""}
+                                    onChange={(e) => {
+                                      const updatedStudent = {
+                                        ...student,
+                                        booster2Brand: e.target.value,  // Update booster2Brand
+                                      };
+                                      setStudents((prev) =>
+                                        prev.map((s) =>
+                                          s.person_id === student.person_id ? updatedStudent : s
+                                        )
+                                      );
+                                      updateItem(updatedStudent);  // Optionally persist changes
+                                    }}
+                                    style={inputStyle}
+                                  />
+                                </td>
+                              </tr>
+
+                              {/* Vaccine Date Row */}
+                              <tr>
+                                <td style={{ padding: "4px 0" }}>Date</td>
+                                <td style={{ padding: "4px" }}>
+                                  <input
+                                    type="date"
+                                    name="vaccine1Date"
+                                    value={student.vaccine1Date || ""}
+                                    onChange={(e) => {
+                                      const updatedStudent = {
+                                        ...student,
+                                        vaccine1Date: e.target.value,  // Update vaccine1Date
+                                      };
+                                      setStudents((prev) =>
+                                        prev.map((s) =>
+                                          s.person_id === student.person_id ? updatedStudent : s
+                                        )
+                                      );
+                                      updateItem(updatedStudent);  // Optionally persist changes
+                                    }}
+                                    style={inputStyle}
+                                  />
+                                </td>
+                                <td style={{ padding: "4px" }}>
+                                  <input
+                                    type="date"
+                                    name="vaccine2Date"
+                                    value={student.vaccine2Date || ""}
+                                    onChange={(e) => {
+                                      const updatedStudent = {
+                                        ...student,
+                                        vaccine2Date: e.target.value,  // Update vaccine2Date
+                                      };
+                                      setStudents((prev) =>
+                                        prev.map((s) =>
+                                          s.person_id === student.person_id ? updatedStudent : s
+                                        )
+                                      );
+                                      updateItem(updatedStudent);  // Optionally persist changes
+                                    }}
+                                    style={inputStyle}
+                                  />
+                                </td>
+                                <td style={{ padding: "4px" }}>
+                                  <input
+                                    type="date"
+                                    name="booster1Date"
+                                    value={student.booster1Date || ""}
+                                    onChange={(e) => {
+                                      const updatedStudent = {
+                                        ...student,
+                                        booster1Date: e.target.value,  // Update booster1Date
+                                      };
+                                      setStudents((prev) =>
+                                        prev.map((s) =>
+                                          s.person_id === student.person_id ? updatedStudent : s
+                                        )
+                                      );
+                                      updateItem(updatedStudent);  // Optionally persist changes
+                                    }}
+                                    style={inputStyle}
+                                  />
+                                </td>
+                                <td style={{ padding: "4px" }}>
+                                  <input
+                                    type="date"
+                                    name="booster2Date"
+                                    value={student.booster2Date || ""}
+                                    onChange={(e) => {
+                                      const updatedStudent = {
+                                        ...student,
+                                        booster2Date: e.target.value,  // Update booster2Date
+                                      };
+                                      setStudents((prev) =>
+                                        prev.map((s) =>
+                                          s.person_id === student.person_id ? updatedStudent : s
+                                        )
+                                      );
+                                      updateItem(updatedStudent);  // Optionally persist changes
+                                    }}
+                                    style={inputStyle}
+                                  />
+                                </td>
+                              </tr>
+                            </React.Fragment>
+                          ))}
+
                         </tbody>
                       </table>
                     </td>
@@ -738,138 +895,198 @@ const HealthMedicalRecords = () => {
                 }}
               >
                 <tbody>
-                  <tr>
-                    <td
-                      style={{
-                        border: "1px solid black",
-                        padding: "8px",
-                        width: "30%",
-                        fontSize: "100%",
-                      }}
-                    >
-                      Chest X-ray:
-                    </td>
-                    <td
-                      style={{
-                        border: "1px solid black",
-                        padding: "8px",
-                        width: "70%",
-                      }}
-                    >
-                      <input
-                        type="text"
-                        value={data[0]?.chestXray || ""}
-                        style={{
-                          width: "100%",
-                          border: "1px solid #ccc",
-                          borderRadius: "8px",
-                          padding: "6px",
-                          boxSizing: "border-box",
-                          backgroundColor: "white",
-                          color: "black",
-                        }}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td
-                      style={{
-                        border: "1px solid black",
-                        padding: "8px",
-                        width: "30%",
-                        fontSize: "100%",
-                      }}
-                    >
-                      Complete Blood Count (CBC):
-                    </td>
-                    <td
-                      style={{
-                        border: "1px solid black",
-                        padding: "8px",
-                        width: "70%",
-                      }}
-                    >
-                      <input
-                        type="text"
-                        value={data[0]?.cbc || ""}
-                        style={{
-                          width: "100%",
-                          border: "1px solid #ccc",
-                          borderRadius: "8px",
-                          padding: "6px",
-                          boxSizing: "border-box",
-                          backgroundColor: "white",
-                          color: "black",
-                        }}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td
-                      style={{
-                        border: "1px solid black",
-                        padding: "8px",
-                        width: "30%",
-                        fontSize: "100%",
-                      }}
-                    >
-                      Urinalysis:
-                    </td>
-                    <td
-                      style={{
-                        border: "1px solid black",
-                        padding: "8px",
-                        width: "70%",
-                      }}
-                    >
-                      <input
-                        type="text"
-                        value={data[0]?.urinalysis || ""}
-                        style={{
-                          width: "100%",
-                          border: "1px solid #ccc",
-                          borderRadius: "8px",
-                          padding: "6px",
-                          boxSizing: "border-box",
-                          backgroundColor: "white",
-                          color: "black",
-                        }}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td
-                      style={{
-                        border: "1px solid black",
-                        padding: "8px",
-                        width: "30%",
-                        fontSize: "100%",
-                      }}
-                    >
-                      Others (Please specify work-ups and results):
-                    </td>
-                    <td
-                      style={{
-                        border: "1px solid black",
-                        padding: "8px",
-                        width: "70%",
-                      }}
-                    >
-                      <input
-                        type="text"
-                        value={data[0]?.otherworkups || ""}
-                        style={{
-                          width: "100%",
-                          border: "1px solid #ccc",
-                          borderRadius: "8px",
-                          padding: "6px",
-                          boxSizing: "border-box",
-                          backgroundColor: "white",
-                          color: "black",
-                        }}
-                      />
-                    </td>
-                  </tr>
+                  {students.map((student) => (
+                    <React.Fragment key={student.person_id}>
+                      {/* Chest X-ray Row */}
+                      <tr>
+                        <td
+                          style={{
+                            border: "1px solid black",
+                            padding: "8px",
+                            width: "30%",
+                            fontSize: "100%",
+                          }}
+                        >
+                          Chest X-ray:
+                        </td>
+                        <td
+                          style={{
+                            border: "1px solid black",
+                            padding: "8px",
+                            width: "70%",
+                          }}
+                        >
+                          <input
+                            type="text"
+                            value={student.chestXray || ""}
+                            onChange={(e) => {
+                              const updatedStudent = {
+                                ...student,
+                                chestXray: e.target.value, // Update chestXray value
+                              };
+                              setStudents((prev) =>
+                                prev.map((s) =>
+                                  s.person_id === student.person_id ? updatedStudent : s
+                                )
+                              );
+                              updateItem(updatedStudent); // Optionally persist changes
+                            }}
+                            style={{
+                              width: "100%",
+                              border: "1px solid #ccc",
+                              borderRadius: "8px",
+                              padding: "6px",
+                              boxSizing: "border-box",
+                              backgroundColor: "white",
+                              color: "black",
+                            }}
+                          />
+                        </td>
+                      </tr>
+
+                      {/* CBC Row */}
+                      <tr>
+                        <td
+                          style={{
+                            border: "1px solid black",
+                            padding: "8px",
+                            width: "30%",
+                            fontSize: "100%",
+                          }}
+                        >
+                          Complete Blood Count (CBC):
+                        </td>
+                        <td
+                          style={{
+                            border: "1px solid black",
+                            padding: "8px",
+                            width: "70%",
+                          }}
+                        >
+                          <input
+                            type="text"
+                            value={student.cbc || ""}
+                            onChange={(e) => {
+                              const updatedStudent = {
+                                ...student,
+                                cbc: e.target.value, // Update CBC value
+                              };
+                              setStudents((prev) =>
+                                prev.map((s) =>
+                                  s.person_id === student.person_id ? updatedStudent : s
+                                )
+                              );
+                              updateItem(updatedStudent); // Optionally persist changes
+                            }}
+                            style={{
+                              width: "100%",
+                              border: "1px solid #ccc",
+                              borderRadius: "8px",
+                              padding: "6px",
+                              boxSizing: "border-box",
+                              backgroundColor: "white",
+                              color: "black",
+                            }}
+                          />
+                        </td>
+                      </tr>
+
+                      {/* Urinalysis Row */}
+                      <tr>
+                        <td
+                          style={{
+                            border: "1px solid black",
+                            padding: "8px",
+                            width: "30%",
+                            fontSize: "100%",
+                          }}
+                        >
+                          Urinalysis:
+                        </td>
+                        <td
+                          style={{
+                            border: "1px solid black",
+                            padding: "8px",
+                            width: "70%",
+                          }}
+                        >
+                          <input
+                            type="text"
+                            value={student.urinalysis || ""}
+                            onChange={(e) => {
+                              const updatedStudent = {
+                                ...student,
+                                urinalysis: e.target.value, // Update urinalysis value
+                              };
+                              setStudents((prev) =>
+                                prev.map((s) =>
+                                  s.person_id === student.person_id ? updatedStudent : s
+                                )
+                              );
+                              updateItem(updatedStudent); // Optionally persist changes
+                            }}
+                            style={{
+                              width: "100%",
+                              border: "1px solid #ccc",
+                              borderRadius: "8px",
+                              padding: "6px",
+                              boxSizing: "border-box",
+                              backgroundColor: "white",
+                              color: "black",
+                            }}
+                          />
+                        </td>
+                      </tr>
+
+                      {/* Other Work-ups Row */}
+                      <tr>
+                        <td
+                          style={{
+                            border: "1px solid black",
+                            padding: "8px",
+                            width: "30%",
+                            fontSize: "100%",
+                          }}
+                        >
+                          Others (Please specify work-ups and results):
+                        </td>
+                        <td
+                          style={{
+                            border: "1px solid black",
+                            padding: "8px",
+                            width: "70%",
+                          }}
+                        >
+                          <input
+                            type="text"
+                            value={student.otherworkups || ""}
+                            onChange={(e) => {
+                              const updatedStudent = {
+                                ...student,
+                                otherworkups: e.target.value, // Update other work-ups value
+                              };
+                              setStudents((prev) =>
+                                prev.map((s) =>
+                                  s.person_id === student.person_id ? updatedStudent : s
+                                )
+                              );
+                              updateItem(updatedStudent); // Optionally persist changes
+                            }}
+                            style={{
+                              width: "100%",
+                              border: "1px solid #ccc",
+                              borderRadius: "8px",
+                              padding: "6px",
+                              boxSizing: "border-box",
+                              backgroundColor: "white",
+                              color: "black",
+                            }}
+                          />
+                        </td>
+                      </tr>
+                    </React.Fragment>
+                  ))}
+
                 </tbody>
               </table>
             </div>
@@ -901,27 +1118,56 @@ const HealthMedicalRecords = () => {
                     >
                       Do you have any of the following symptoms today?
                       <div style={{ marginTop: "8px" }}>
-                        <FormGroup row sx={{ ml: 2 }}>
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                name="symptomsToday"
-                                checked={data[0]?.symptomsToday === 1} // If symptomsToday is 1, check the box
+                        {students.map((student) => (
+                          <React.Fragment key={student.person_id}>
+                            <FormGroup row sx={{ ml: 2 }}>
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    name="symptomsToday"
+                                    checked={student.symptomsToday === 1} // If symptomsToday is 1, check the box
+                                    onChange={(e) => {
+                                      const updatedStudent = {
+                                        ...student,
+                                        symptomsToday: e.target.checked ? 1 : 0, // Update based on checkbox
+                                      };
+                                      setStudents((prev) =>
+                                        prev.map((s) =>
+                                          s.person_id === student.person_id ? updatedStudent : s
+                                        )
+                                      );
+                                      updateItem(updatedStudent); // Optionally persist changes
+                                    }}
+                                  />
+                                }
+                                label="Physically Fit"
+                                sx={{ mr: 3 }}
                               />
-                            }
-                            label="Physically Fit"
-                            sx={{ mr: 3 }}
-                          />
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                name="symptomsToday"
-                                checked={data[0]?.symptomsToday === 0} // If symptomsToday is 0, check the box for Compliance
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    name="symptomsToday"
+                                    checked={student.symptomsToday === 0} // If symptomsToday is 0, check the box for Compliance
+                                    onChange={(e) => {
+                                      const updatedStudent = {
+                                        ...student,
+                                        symptomsToday: e.target.checked ? 0 : 1, // Update based on checkbox
+                                      };
+                                      setStudents((prev) =>
+                                        prev.map((s) =>
+                                          s.person_id === student.person_id ? updatedStudent : s
+                                        )
+                                      );
+                                      updateItem(updatedStudent); // Optionally persist changes
+                                    }}
+                                  />
+                                }
+                                label="For Compliance"
                               />
-                            }
-                            label="For Compliance"
-                          />
-                        </FormGroup>
+                            </FormGroup>
+                          </React.Fragment>
+                        ))}
+
                       </div>
                     </td>
                   </tr>
@@ -944,40 +1190,53 @@ const HealthMedicalRecords = () => {
                 }}
               >
                 <tbody>
-                  <tr>
-                    <td
-                      style={{
-                        border: "1px solid black",
-                        padding: "8px",
-                      }}
-                    >
-                      <textarea
-                        rows="2"
-                        style={{
-                          width: "100%",
-                          border: "1px solid #ccc",
-                          borderRadius: "8px",
-                          padding: "8px",
-                          boxSizing: "border-box",
-                          backgroundColor: "white",
-                          color: "black",
-                          resize: "none",
-                        }}
-                        value={data[0]?.remarks || ""}
-                        onChange={(e) => {
-                          // Optionally, you can handle changes here if you want to update the state
-                          // e.g., setData({...data, remarks: e.target.value});
-                        }}
-                      />
-                    </td>
-                  </tr>
+                  {students.map((student) => (
+                    <React.Fragment key={student.person_id}>
+                      <tr>
+                        <td
+                          style={{
+                            border: "1px solid black",
+                            padding: "8px",
+                          }}
+                        >
+                          <textarea
+                            rows="2"
+                            style={{
+                              width: "100%",
+                              border: "1px solid #ccc",
+                              borderRadius: "8px",
+                              padding: "8px",
+                              boxSizing: "border-box",
+                              backgroundColor: "white",
+                              color: "black",
+                              resize: "none",
+                            }}
+                            value={student.remarks || ""}  // Dynamically set value per student
+                            onChange={(e) => {
+                              const updatedStudent = {
+                                ...student,
+                                remarks: e.target.value,  // Update the remarks field
+                              };
+                              setStudents((prev) =>
+                                prev.map((s) =>
+                                  s.person_id === student.person_id ? updatedStudent : s
+                                )
+                              );
+                              updateItem(updatedStudent); // Optionally persist changes
+                            }}
+                          />
+                        </td>
+                      </tr>
+                    </React.Fragment>
+                  ))}
+
                 </tbody>
               </table>
             </div>
 
           </form>
         </div>
-      
+
         <Box display="flex" justifyContent="space-between" mt={4}>
           {/* Previous Page Button */}
           <Button
