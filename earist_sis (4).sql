@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 21, 2025 at 09:16 AM
+-- Generation Time: May 07, 2025 at 05:43 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -303,6 +303,154 @@ CREATE TABLE `enrolled_subject` (
 INSERT INTO `enrolled_subject` (`id`, `curriculum_id`, `course_id`, `student_number`, `active_school_year_id`) VALUES
 (13, 1, 6, 1, NULL),
 (14, 1, 7, 1, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `person_table`
+--
+
+CREATE TABLE `person_table` (
+  `person_id` int(11) NOT NULL,
+  `profile_picture` varchar(255) DEFAULT NULL,
+  `campus` int(11) DEFAULT NULL,
+  `academicProgram` varchar(100) DEFAULT NULL,
+  `classifiedAs` varchar(50) DEFAULT NULL,
+  `program` varchar(100) DEFAULT NULL,
+  `yearLevel` varchar(30) DEFAULT NULL,
+  `lastName` varchar(100) DEFAULT NULL,
+  `firstName` varchar(100) DEFAULT NULL,
+  `middleName` varchar(100) DEFAULT NULL,
+  `extension` varchar(10) DEFAULT NULL,
+  `nickname` varchar(50) DEFAULT NULL,
+  `height` varchar(10) DEFAULT NULL,
+  `weight` varchar(10) DEFAULT NULL,
+  `lrnNumber` varchar(20) DEFAULT NULL,
+  `gender` int(11) DEFAULT NULL,
+  `pwdType` varchar(50) DEFAULT NULL,
+  `pwdId` varchar(50) DEFAULT NULL,
+  `birthOfDate` date DEFAULT NULL,
+  `age` int(11) DEFAULT NULL,
+  `birthPlace` varchar(255) DEFAULT NULL,
+  `languageDialectSpoken` varchar(255) DEFAULT NULL,
+  `citizenship` varchar(50) DEFAULT NULL,
+  `religion` varchar(50) DEFAULT NULL,
+  `civilStatus` varchar(50) DEFAULT NULL,
+  `tribeEthnicGroup` varchar(50) DEFAULT NULL,
+  `otherEthnicGroup` varchar(50) NOT NULL,
+  `cellphoneNumber` varchar(20) DEFAULT NULL,
+  `emailAddress` varchar(100) DEFAULT NULL,
+  `telephoneNumber` varchar(20) DEFAULT NULL,
+  `facebookAccount` varchar(255) DEFAULT NULL,
+  `presentStreet` varchar(255) DEFAULT NULL,
+  `presentBarangay` varchar(100) DEFAULT NULL,
+  `presentZipCode` varchar(10) DEFAULT NULL,
+  `presentRegion` varchar(75) DEFAULT NULL,
+  `presentProvince` varchar(75) DEFAULT NULL,
+  `presentMunicipality` varchar(75) DEFAULT NULL,
+  `presentDswdHouseholdNumber` varchar(50) DEFAULT NULL,
+  `permanentStreet` varchar(255) DEFAULT NULL,
+  `permanentBarangay` varchar(100) DEFAULT NULL,
+  `permanentZipCode` varchar(10) DEFAULT NULL,
+  `permanentRegion` varchar(75) DEFAULT NULL,
+  `permanentProvince` varchar(75) DEFAULT NULL,
+  `permanentMunicipality` varchar(75) DEFAULT NULL,
+  `permanentDswdHouseholdNumber` varchar(50) DEFAULT NULL,
+  `solo_parent` varchar(5) DEFAULT NULL,
+  `father_deceased` varchar(5) DEFAULT NULL,
+  `father_family_name` varchar(100) DEFAULT NULL,
+  `father_given_name` varchar(100) DEFAULT NULL,
+  `father_middle_name` varchar(100) DEFAULT NULL,
+  `father_ext` varchar(10) DEFAULT NULL,
+  `father_nickname` varchar(50) DEFAULT NULL,
+  `father_education_level` varchar(100) DEFAULT NULL,
+  `father_last_school` varchar(100) DEFAULT NULL,
+  `father_course` varchar(100) DEFAULT NULL,
+  `father_year_graduated` varchar(10) DEFAULT NULL,
+  `father_school_address` varchar(255) DEFAULT NULL,
+  `father_contact` varchar(20) DEFAULT NULL,
+  `father_occupation` varchar(100) DEFAULT NULL,
+  `father_employer` varchar(100) DEFAULT NULL,
+  `father_income` varchar(20) DEFAULT NULL,
+  `father_email` varchar(100) DEFAULT NULL,
+  `mother_deceased` varchar(5) DEFAULT NULL,
+  `mother_family_name` varchar(100) DEFAULT NULL,
+  `mother_given_name` varchar(100) DEFAULT NULL,
+  `mother_middle_name` varchar(100) DEFAULT NULL,
+  `mother_nickname` varchar(50) DEFAULT NULL,
+  `mother_education_level` varchar(100) DEFAULT NULL,
+  `mother_last_school` varchar(100) DEFAULT NULL,
+  `mother_course` varchar(100) DEFAULT NULL,
+  `mother_year_graduated` varchar(10) DEFAULT NULL,
+  `mother_school_address` varchar(255) DEFAULT NULL,
+  `mother_contact` varchar(20) DEFAULT NULL,
+  `mother_occupation` varchar(100) DEFAULT NULL,
+  `mother_employer` varchar(100) DEFAULT NULL,
+  `mother_income` varchar(20) DEFAULT NULL,
+  `mother_email` varchar(100) DEFAULT NULL,
+  `guardian` varchar(100) DEFAULT NULL,
+  `guardian_family_name` varchar(100) DEFAULT NULL,
+  `guardian_given_name` varchar(100) DEFAULT NULL,
+  `guardian_middle_name` varchar(100) DEFAULT NULL,
+  `guardian_ext` varchar(10) DEFAULT NULL,
+  `guardian_nickname` varchar(50) DEFAULT NULL,
+  `guardian_address` varchar(255) DEFAULT NULL,
+  `guardian_contact` varchar(20) DEFAULT NULL,
+  `guardian_email` varchar(100) DEFAULT NULL,
+  `annual_income` varchar(50) DEFAULT NULL,
+  `schoolLevel` varchar(50) DEFAULT NULL,
+  `schoolLastAttended` varchar(100) DEFAULT NULL,
+  `schoolAddress` varchar(255) DEFAULT NULL,
+  `courseProgram` varchar(100) DEFAULT NULL,
+  `honor` varchar(100) DEFAULT NULL,
+  `generalAverage` decimal(5,2) DEFAULT NULL,
+  `yearGraduated` int(11) DEFAULT NULL,
+  `strand` varchar(100) DEFAULT NULL,
+  `cough` int(11) DEFAULT NULL,
+  `colds` int(11) DEFAULT NULL,
+  `fever` int(11) DEFAULT NULL,
+  `asthma` int(11) DEFAULT NULL,
+  `faintingSpells` int(11) DEFAULT NULL,
+  `heartDisease` int(11) DEFAULT NULL,
+  `tuberculosis` int(11) DEFAULT NULL,
+  `frequentHeadaches` int(11) DEFAULT NULL,
+  `hernia` int(11) DEFAULT NULL,
+  `chronicCough` int(11) DEFAULT NULL,
+  `headNeckInjury` int(11) DEFAULT NULL,
+  `hiv` int(11) DEFAULT NULL,
+  `highBloodPressure` int(11) DEFAULT NULL,
+  `diabetesMellitus` int(11) DEFAULT NULL,
+  `allergies` int(11) DEFAULT NULL,
+  `cancer` int(11) DEFAULT NULL,
+  `smokingCigarette` int(11) DEFAULT NULL,
+  `alcoholDrinking` int(11) DEFAULT NULL,
+  `hospitalized` int(11) DEFAULT NULL,
+  `hospitalizationDetails` varchar(255) DEFAULT NULL,
+  `medications` varchar(255) DEFAULT NULL,
+  `hadCovid` int(11) DEFAULT NULL,
+  `covidDate` date DEFAULT NULL,
+  `vaccine1Brand` varchar(50) DEFAULT NULL,
+  `vaccine1Date` date DEFAULT NULL,
+  `vaccine2Brand` varchar(50) DEFAULT NULL,
+  `vaccine2Date` date DEFAULT NULL,
+  `booster1Brand` varchar(50) DEFAULT NULL,
+  `booster1Date` date DEFAULT NULL,
+  `booster2Brand` varchar(50) DEFAULT NULL,
+  `booster2Date` date DEFAULT NULL,
+  `chestXray` varchar(100) DEFAULT NULL,
+  `cbc` varchar(100) DEFAULT NULL,
+  `urinalysis` varchar(100) DEFAULT NULL,
+  `otherworkups` varchar(255) DEFAULT NULL,
+  `symptomsToday` int(11) DEFAULT NULL,
+  `remarks` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `person_table`
+--
+
+INSERT INTO `person_table` (`person_id`, `profile_picture`, `campus`, `academicProgram`, `classifiedAs`, `program`, `yearLevel`, `lastName`, `firstName`, `middleName`, `extension`, `nickname`, `height`, `weight`, `lrnNumber`, `gender`, `pwdType`, `pwdId`, `birthOfDate`, `age`, `birthPlace`, `languageDialectSpoken`, `citizenship`, `religion`, `civilStatus`, `tribeEthnicGroup`, `otherEthnicGroup`, `cellphoneNumber`, `emailAddress`, `telephoneNumber`, `facebookAccount`, `presentStreet`, `presentBarangay`, `presentZipCode`, `presentRegion`, `presentProvince`, `presentMunicipality`, `presentDswdHouseholdNumber`, `permanentStreet`, `permanentBarangay`, `permanentZipCode`, `permanentRegion`, `permanentProvince`, `permanentMunicipality`, `permanentDswdHouseholdNumber`, `solo_parent`, `father_deceased`, `father_family_name`, `father_given_name`, `father_middle_name`, `father_ext`, `father_nickname`, `father_education_level`, `father_last_school`, `father_course`, `father_year_graduated`, `father_school_address`, `father_contact`, `father_occupation`, `father_employer`, `father_income`, `father_email`, `mother_deceased`, `mother_family_name`, `mother_given_name`, `mother_middle_name`, `mother_nickname`, `mother_education_level`, `mother_last_school`, `mother_course`, `mother_year_graduated`, `mother_school_address`, `mother_contact`, `mother_occupation`, `mother_employer`, `mother_income`, `mother_email`, `guardian`, `guardian_family_name`, `guardian_given_name`, `guardian_middle_name`, `guardian_ext`, `guardian_nickname`, `guardian_address`, `guardian_contact`, `guardian_email`, `annual_income`, `schoolLevel`, `schoolLastAttended`, `schoolAddress`, `courseProgram`, `honor`, `generalAverage`, `yearGraduated`, `strand`, `cough`, `colds`, `fever`, `asthma`, `faintingSpells`, `heartDisease`, `tuberculosis`, `frequentHeadaches`, `hernia`, `chronicCough`, `headNeckInjury`, `hiv`, `highBloodPressure`, `diabetesMellitus`, `allergies`, `cancer`, `smokingCigarette`, `alcoholDrinking`, `hospitalized`, `hospitalizationDetails`, `medications`, `hadCovid`, `covidDate`, `vaccine1Brand`, `vaccine1Date`, `vaccine2Brand`, `vaccine2Date`, `booster1Brand`, `booster1Date`, `booster2Brand`, `booster2Date`, `chestXray`, `cbc`, `urinalysis`, `otherworkups`, `symptomsToday`, `remarks`) VALUES
+(1, 'profile1.jpg', 1, 'Science', 'Freshman', 'BS Biology', '1st Year', 'Doe', 'John', 'Michael', NULL, 'Johnny', '5\'10\"', '160 lbs', '123456789012', 1, 'Visual Impairment', 'PWD12345', '2005-05-15', 19, 'Manila, Philippines', 'Tagalog, English', 'Filipino', 'Roman Catholic', 'Single', 'Tagalog', '', '09171234567', 'johndoe@email.com', '028123456', 'facebook.com/johndoe', '123 Mabini St.', 'Barangay Uno', '1000', 'NCR', 'Metro Manila', 'Manila', 'DSWD123456', '123 Rizal St.', 'Barangay Dos', '1001', 'NCR', 'Metro Manila', 'Quezon City', 'DSWD654321', 'Yes', 'No', 'Doe Sr.', 'Jonathan', 'Smith', NULL, 'Jon', 'College Graduate', 'UP Diliman', 'Engineering', '1990', 'Quezon City', '09181234567', 'Engineer', 'ABC Corp', '50000', 'jon.doe@abc.com', 'No', 'Jane', 'Mary', 'Anne', 'Janey', 'College Graduate', 'PUP', 'Business Admin', '1992', 'Sta. Mesa', '09221234567', 'Accountant', 'XYZ Corp', '45000', 'jane.doe@xyz.com', 'Uncle Ben', 'Parker', 'Ben', 'Jose', NULL, 'Benny', '789 Recto Ave', '09192233445', 'uncleben@family.com', '120000', 'Senior High', 'Rizal High School', 'Pasig City', 'STEM', 'With Honors', 89.50, 2022, 'STEM', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '', '', 1, '2022-03-05', 'Pfizer', '2022-04-05', 'Pfizer', '2022-05-05', 'Moderna', '2022-08-05', 'Pfizer', '2023-02-05', 'Normal', 'Normal', 'Normal', '', 0, 'Fit to enroll');
 
 -- --------------------------------------------------------
 
@@ -659,6 +807,12 @@ ALTER TABLE `enrolled_subject`
   ADD KEY `course_id` (`course_id`),
   ADD KEY `fk_enrolled_student_number` (`student_number`),
   ADD KEY `fk_enrolled_active_school_year` (`active_school_year_id`);
+
+--
+-- Indexes for table `person_table`
+--
+ALTER TABLE `person_table`
+  ADD PRIMARY KEY (`person_id`);
 
 --
 -- Indexes for table `prof_table`

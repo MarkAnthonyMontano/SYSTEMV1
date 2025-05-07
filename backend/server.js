@@ -257,7 +257,7 @@ app.get("/person_table", async (req, res) => {
 // POST STUDENT APPLICANT
 app.post("/person_table", async (req, res) => {
   const { 
-    profile_picture, campus, academicProgram, classifiedAs, program, yearLevel,
+    profile_picture, campus, academicProgram, classifiedAs, program, program2, program3, yearLevel,
     lastName, firstName, middleName, extension, nickname, height, weight,
     lrnNumber, gender, pwdType, pwdId, birthOfDate, age, birthPlace,
     languageDialectSpoken, citizenship, religion, civilStatus, tribeEthnicGroup,
@@ -286,7 +286,7 @@ app.post("/person_table", async (req, res) => {
 
   const query = `
     INSERT INTO person_table (
-      profile_picture, campus, academicProgram, classifiedAs, program, yearLevel,
+      profile_picture, campus, academicProgram, classifiedAs, program, program2, program3, yearLevel,
       lastName, firstName, middleName, extension, nickname, height, weight,
       lrnNumber, gender, pwdType, pwdId, birthOfDate, age, birthPlace,
       languageDialectSpoken, citizenship, religion, civilStatus, tribeEthnicGroup,
@@ -311,12 +311,12 @@ app.post("/person_table", async (req, res) => {
       smoking, alcoholDrinking, hospitalized, hospitalizationDetails, medications, hadCovid, covidDate,
       vaccine1Brand, vaccine1Date, vaccine2Brand, vaccine2Date, booster1Brand, booster1Date, booster2Brand,
       booster2Date, chestXray, cbc, urinalysis, otherworkups, symptomsToday, remarks
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?,  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   try {
     const [result] = await db.query(query, [
-      profile_picture, campus, academicProgram, classifiedAs, program, yearLevel,
+      profile_picture, campus, academicProgram, classifiedAs, program, program2, program3, yearLevel,
       lastName, firstName, middleName, extension, nickname, height, weight,
       lrnNumber, gender, pwdType, pwdId, birthOfDate, age, birthPlace,
       languageDialectSpoken, citizenship, religion, civilStatus, tribeEthnicGroup,
@@ -355,7 +355,7 @@ app.put("/person_table/:person_id", (req, res) => {
   const { person_id } = req.params;
 
   const {
-    profile_picture, campus, academicProgram, classifiedAs, program, yearLevel,
+    profile_picture, campus, academicProgram, classifiedAs, program, program2, program3,  yearLevel,
     lastName, firstName, middleName, extension, nickname, height, weight,
     lrnNumber, gender, pwdType, pwdId, birthOfDate, age, birthPlace,
     languageDialectSpoken, citizenship, religion, civilStatus, tribeEthnicGroup,
@@ -384,7 +384,7 @@ app.put("/person_table/:person_id", (req, res) => {
 
   const updateQuery = `
     UPDATE person_table SET
-      profile_picture = ?, campus = ?, academicProgram = ?, classifiedAs = ?, program = ?, yearLevel = ?,
+      profile_picture = ?, campus = ?, academicProgram = ?, classifiedAs = ?, program = ?, program2 = ?, program3 = ?, yearLevel = ?,
       lastName = ?, firstName = ?, middleName = ?, extension = ?, nickname = ?, height = ?, weight = ?,
       lrnNumber = ?, gender = ?, pwdType = ?, pwdId = ?, birthOfDate = ?, age = ?, birthPlace = ?,
       languageDialectSpoken = ?, citizenship = ?, religion = ?, civilStatus = ?, tribeEthnicGroup = ?,
@@ -416,7 +416,7 @@ app.put("/person_table/:person_id", (req, res) => {
   `;
 
   const values = [
-    profile_picture, campus, academicProgram, classifiedAs, program, yearLevel,
+    profile_picture, campus, academicProgram, classifiedAs, program, program2, program3, yearLevel,
     lastName, firstName, middleName, extension, nickname, height, weight,
     lrnNumber, gender, pwdType, pwdId, birthOfDate, age, birthPlace,
     languageDialectSpoken, citizenship, religion, civilStatus, tribeEthnicGroup,
