@@ -244,7 +244,40 @@ app.delete("/applicant-requirements/:id", (req, res) => {
   });
 });
 
-// GET STUDENT APPLICANT
+// POST /upload
+app.post('/upload-image', upload.single('image'), (req, res) => {
+  const person_id = req.body.person_id;
+  const filename = req.file.filename;
+
+  const query = 'UPDATE person_table SET profile_picture = ? WHERE person_id = ?';
+  db.query(query, [filename, person_id], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true, filename });
+  });
+});
+
+// -------------------------------------------- UPDATE PROFILE PICTURE ON THE DATABASE ------------------------------------------------//
+app.put("/api/update-profile-picture", upload.single("profile_picture"), async (req, res) => {
+  const { person_id } = req.body;
+
+  if (!person_id || !req.file) {
+    return res.status(400).send("person_id and profile_picture are required");
+  }
+
+  try {
+    const filename = req.file.filename;
+
+    const sql = "UPDATE person_table SET profile_picture = ? WHERE id = ?";
+    await db.query(sql, [filename, person_id]);
+
+    res.json({ message: "Profile picture updated successfully", filename });
+  } catch (err) {
+    console.error("Error updating profile picture:", err);
+    res.status(500).send("Database update failed.");
+  }
+});
+
+// -------------------------------------------- aPPLICANT FORM ------------------------------------------------//
 app.get("/person_table", async (req, res) => {
   try {
     const [results] = await db.query("SELECT * FROM person_table");
@@ -254,10 +287,10 @@ app.get("/person_table", async (req, res) => {
   }
 });
 
-// POST STUDENT APPLICANT
+// -------------------------------------------- TO ADD APPLICANT FORM ------------------------------------------------//
 app.post("/person_table", async (req, res) => {
   const { 
-    profile_picture, campus, academicProgram, classifiedAs, program, program2, program3, yearLevel,
+    profile_picture, campus, academicProgram, classifiedAs, program, yearLevel,
     lastName, firstName, middleName, extension, nickname, height, weight,
     lrnNumber, gender, pwdType, pwdId, birthOfDate, age, birthPlace,
     languageDialectSpoken, citizenship, religion, civilStatus, tribeEthnicGroup,
@@ -277,7 +310,7 @@ app.post("/person_table", async (req, res) => {
     guardian_family_name, guardian_given_name, guardian_middle_name, guardian_ext,
     guardian_nickname, guardian_address, guardian_contact, guardian_email,
     annual_income, schoolLevel, schoolLastAttended, schoolAddress, courseProgram,
-    honor, generalAverage, yearGraduated, strand, cough, colds, fever, asthma, fainting, heartDisease, tuberculosis, frequentheadaches,
+    honor, generalAverage, yearGraduated, strand, cough, colds, fever, asthma, fainting, heartDisease, tuberculosis, frequentHeadaches,
     hernia, chronicCough, headNeckInjury, hiv, highBloodPressure, diabetesMellitus, allergies, cancer,
     smoking, alcoholDrinking, hospitalized, hospitalizationDetails, medications, hadCovid, covidDate,
     vaccine1Brand, vaccine1Date, vaccine2Brand, vaccine2Date, booster1Brand, booster1Date, booster2Brand,
@@ -286,7 +319,7 @@ app.post("/person_table", async (req, res) => {
 
   const query = `
     INSERT INTO person_table (
-      profile_picture, campus, academicProgram, classifiedAs, program, program2, program3, yearLevel,
+      profile_picture, campus, academicProgram, classifiedAs, program, yearLevel,
       lastName, firstName, middleName, extension, nickname, height, weight,
       lrnNumber, gender, pwdType, pwdId, birthOfDate, age, birthPlace,
       languageDialectSpoken, citizenship, religion, civilStatus, tribeEthnicGroup,
@@ -306,17 +339,17 @@ app.post("/person_table", async (req, res) => {
       guardian_family_name, guardian_given_name, guardian_middle_name, guardian_ext,
       guardian_nickname, guardian_address, guardian_contact, guardian_email,
       annual_income, schoolLevel, schoolLastAttended, schoolAddress, courseProgram,
-      honor, generalAverage, yearGraduated, strand, cough, colds, fever, asthma, fainting, heartDisease, tuberculosis, frequentheadaches,
+      honor, generalAverage, yearGraduated, strand, cough, colds, fever, asthma, fainting, heartDisease, tuberculosis, frequentHeadaches,
       hernia, chronicCough, headNeckInjury, hiv, highBloodPressure, diabetesMellitus, allergies, cancer,
       smoking, alcoholDrinking, hospitalized, hospitalizationDetails, medications, hadCovid, covidDate,
       vaccine1Brand, vaccine1Date, vaccine2Brand, vaccine2Date, booster1Brand, booster1Date, booster2Brand,
       booster2Date, chestXray, cbc, urinalysis, otherworkups, symptomsToday, remarks
-    ) VALUES (?, ?, ?,  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   try {
     const [result] = await db.query(query, [
-      profile_picture, campus, academicProgram, classifiedAs, program, program2, program3, yearLevel,
+      profile_picture, campus, academicProgram, classifiedAs, program, yearLevel,
       lastName, firstName, middleName, extension, nickname, height, weight,
       lrnNumber, gender, pwdType, pwdId, birthOfDate, age, birthPlace,
       languageDialectSpoken, citizenship, religion, civilStatus, tribeEthnicGroup,
@@ -336,7 +369,7 @@ app.post("/person_table", async (req, res) => {
       guardian_family_name, guardian_given_name, guardian_middle_name, guardian_ext,
       guardian_nickname, guardian_address, guardian_contact, guardian_email,
       annual_income, schoolLevel, schoolLastAttended, schoolAddress, courseProgram,
-      honor, generalAverage, yearGraduated, strand, cough, colds, fever, asthma, fainting, heartDisease, tuberculosis, frequentheadaches,
+      honor, generalAverage, yearGraduated, strand, cough, colds, fever, asthma, fainting, heartDisease, tuberculosis, frequentHeadaches,
       hernia, chronicCough, headNeckInjury, hiv, highBloodPressure, diabetesMellitus, allergies, cancer,
       smoking, alcoholDrinking, hospitalized, hospitalizationDetails, medications, hadCovid, covidDate,
       vaccine1Brand, vaccine1Date, vaccine2Brand, vaccine2Date, booster1Brand, booster1Date, booster2Brand,
@@ -350,12 +383,12 @@ app.post("/person_table", async (req, res) => {
 });
 
 
-// UPDATE THE ADMISSION
+// -------------------------------------------- UPDATE APPLICANT FORM ------------------------------------------------//
 app.put("/person_table/:person_id", (req, res) => {
   const { person_id } = req.params;
 
   const {
-    profile_picture, campus, academicProgram, classifiedAs, program, program2, program3,  yearLevel,
+    profile_picture, campus, academicProgram, classifiedAs, program, yearLevel,
     lastName, firstName, middleName, extension, nickname, height, weight,
     lrnNumber, gender, pwdType, pwdId, birthOfDate, age, birthPlace,
     languageDialectSpoken, citizenship, religion, civilStatus, tribeEthnicGroup,
@@ -375,7 +408,7 @@ app.put("/person_table/:person_id", (req, res) => {
     guardian_family_name, guardian_given_name, guardian_middle_name, guardian_ext,
     guardian_nickname, guardian_address, guardian_contact, guardian_email,
     annual_income, schoolLevel, schoolLastAttended, schoolAddress, courseProgram,
-    honor, generalAverage, yearGraduated, strand, cough, colds, fever, asthma, faintingSpells, heartDisease, tuberculosis, frequentheadaches,
+    honor, generalAverage, yearGraduated, strand, cough, colds, fever, asthma, faintingSpells, heartDisease, tuberculosis, frequentHeadaches,
     hernia, chronicCough, headNeckInjury, hiv, highBloodPressure, diabetesMellitus, allergies, cancer,
     smokingCigarette, alcoholDrinking, hospitalized, hospitalizationDetails, medications, hadCovid, covidDate,
     vaccine1Brand, vaccine1Date, vaccine2Brand, vaccine2Date, booster1Brand, booster1Date, booster2Brand,
@@ -384,7 +417,7 @@ app.put("/person_table/:person_id", (req, res) => {
 
   const updateQuery = `
     UPDATE person_table SET
-      profile_picture = ?, campus = ?, academicProgram = ?, classifiedAs = ?, program = ?, program2 = ?, program3 = ?, yearLevel = ?,
+      profile_picture = ?, campus = ?, academicProgram = ?, classifiedAs = ?, program = ?, yearLevel = ?,
       lastName = ?, firstName = ?, middleName = ?, extension = ?, nickname = ?, height = ?, weight = ?,
       lrnNumber = ?, gender = ?, pwdType = ?, pwdId = ?, birthOfDate = ?, age = ?, birthPlace = ?,
       languageDialectSpoken = ?, citizenship = ?, religion = ?, civilStatus = ?, tribeEthnicGroup = ?,
@@ -405,7 +438,7 @@ app.put("/person_table/:person_id", (req, res) => {
       guardian_nickname = ?, guardian_address = ?, guardian_contact = ?, guardian_email = ?,
       annual_income = ?, schoolLevel = ?, schoolLastAttended = ?, schoolAddress = ?, courseProgram = ?,
       honor = ?, generalAverage = ?, yearGraduated = ?, strand = ?, cough = ?, colds = ?, fever = ?,
-      asthma = ?, faintingSpells = ?, heartDisease = ?, tuberculosis = ?, frequentheadaches = ?,
+      asthma = ?, faintingSpells = ?, heartDisease = ?, tuberculosis = ?, frequentHeadaches = ?,
       hernia = ?, chronicCough = ?, headNeckInjury = ?, hiv = ?, highBloodPressure = ?,
       diabetesMellitus = ?, allergies = ?, cancer = ?, smokingCigarette = ?, alcoholDrinking = ?, hospitalized = ?,
       hospitalizationDetails = ?, medications = ?, hadCovid = ?, covidDate = ?, vaccine1Brand = ?,
@@ -416,7 +449,7 @@ app.put("/person_table/:person_id", (req, res) => {
   `;
 
   const values = [
-    profile_picture, campus, academicProgram, classifiedAs, program, program2, program3, yearLevel,
+    profile_picture, campus, academicProgram, classifiedAs, program, yearLevel,
     lastName, firstName, middleName, extension, nickname, height, weight,
     lrnNumber, gender, pwdType, pwdId, birthOfDate, age, birthPlace,
     languageDialectSpoken, citizenship, religion, civilStatus, tribeEthnicGroup,
@@ -436,7 +469,7 @@ app.put("/person_table/:person_id", (req, res) => {
     guardian_family_name, guardian_given_name, guardian_middle_name, guardian_ext,
     guardian_nickname, guardian_address, guardian_contact, guardian_email,
     annual_income, schoolLevel, schoolLastAttended, schoolAddress, courseProgram,
-    honor, generalAverage, yearGraduated, strand, cough, colds, fever, asthma, faintingSpells, heartDisease, tuberculosis, frequentheadaches,
+    honor, generalAverage, yearGraduated, strand, cough, colds, fever, asthma, faintingSpells, heartDisease, tuberculosis, frequentHeadaches,
     hernia, chronicCough, headNeckInjury, hiv, highBloodPressure, diabetesMellitus, allergies, cancer,
     smokingCigarette, alcoholDrinking, hospitalized, hospitalizationDetails, medications, hadCovid, covidDate,
     vaccine1Brand, vaccine1Date, vaccine2Brand, vaccine2Date, booster1Brand, booster1Date, booster2Brand,
@@ -457,7 +490,7 @@ app.put("/person_table/:person_id", (req, res) => {
 
 
 
-// Application Delete
+// -------------------------------------------- DELETE APPLICANT FORM ------------------------------------------------//
 app.delete("/person_table/:person_id", async (req, res) => {
   const { person_id } = req.params;
 
@@ -1867,8 +1900,8 @@ app.post("/api/register", async (req, res) => {
   }
 
   try {
-    const sql = "INSERT INTO person_table (first_name, middle_name, last_name) VALUES (?, ?, ?)";
-    const [result] = await db2.query(sql, [first_name, middle_name, last_name]);
+    const sql = "INSERT INTO person_table (lastName, firstName, middleName) VALUES (?, ?, ?)";
+    const [result] = await db.query(sql, [first_name, middle_name, last_name]);
     const person_id = result.insertId;
     res.json({ person_id });
   } catch (err) {
@@ -1932,8 +1965,8 @@ app.post("/api/upload-profile-picture", upload.single("profile_picture"), async 
     // Rename the uploaded file
     await fs.promises.rename(oldPath, newPath);
 
-    const sql = "UPDATE person_table SET profile_img = ? WHERE person_id = ?";
-    await pool.query(sql, [newFilename, person_id]);
+    const sql = "UPDATE person_table SET profile_picture = ? WHERE person_id = ?";
+    await db.query(sql, [newFilename, person_id]);
     res.send("Profile picture uploaded successfully");
   } catch (err) {
     console.error("Error processing file:", err);

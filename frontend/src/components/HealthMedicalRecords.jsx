@@ -120,8 +120,14 @@ const HealthMedicalRecords = () => {
 
   return (
     <Container maxWidth="lg">
-      <h1 style={{ textAlign: "center", color: "maroon", marginTop: "75x" }}>APPLICANT FORM</h1>
-      <div style={{ textAlign: "Center", }}>Complete the applicant form to secure your place for the upcoming academic year at EARIST.</div>
+        <Container>
+      <h1 style={{ fontSize: "50px", fontWeight:"bold",textAlign: "center", color: "maroon", marginTop: "75px" }}>
+        APPLICANT FORM
+      </h1>
+      <div style={{ textAlign: "center" }}>
+        Complete the applicant form to secure your place for the upcoming academic year at EARIST.
+      </div>
+    </Container>
       < br />
       <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', px: 4 }}>
         {steps.map((step, index) => (

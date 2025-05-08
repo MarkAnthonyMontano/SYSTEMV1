@@ -123,8 +123,14 @@ const EducationalAttainment = () => {
 
   return (
     <Container>
-      <h1 style={{ textAlign: "center", color: "maroon", marginTop: "75px" }}>APPLICANT FORM</h1>
-      <div style={{ textAlign: "Center", }}>Complete the applicant form to secure your place for the upcoming academic year at EARIST.</div>
+       <Container>
+           <h1 style={{ fontSize: "50px", fontWeight:"bold",textAlign: "center", color: "maroon", marginTop: "75px" }}>
+             APPLICANT FORM
+           </h1>
+           <div style={{ textAlign: "center" }}>
+             Complete the applicant form to secure your place for the upcoming academic year at EARIST.
+           </div>
+         </Container>
       <br />
       <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', px: 4 }}>
         {steps.map((step, index) => (
@@ -220,6 +226,7 @@ const EducationalAttainment = () => {
                       id={`schoolLevel-select-${student.person_id}`}
                       value={student.schoolLevel || ""}
                       label="School Level"
+                      sx={{  width: "265px"}}
                       onChange={(e) => {
                         const updatedStudent = {
                           ...student,
@@ -252,9 +259,9 @@ const EducationalAttainment = () => {
                   <TextField
                     label="Enter School Last Attended"
                     required
-                    fullWidth
+                    
                     size="small"
-                    sx={{ mt: 1 }}
+                    sx={{ mt: 1, width: "265px"}}
                     value={student.schoolLastAttended || ""}
                     onChange={(e) => {
                       const updatedStudent = {
@@ -279,9 +286,9 @@ const EducationalAttainment = () => {
                   <TextField
                     label="Enter School Address"
                     required
-                    fullWidth
+                    
                     size="small"
-                    sx={{ mt: 1 }}
+                    sx={{ mt: 1, width: "265px"}}
                     value={student.schoolAddress || ""}
                     onChange={(e) => {
                       const updatedStudent = {
@@ -303,9 +310,9 @@ const EducationalAttainment = () => {
                   <div>Course/Program:</div>
                   <TextField
                     label="Enter Course/Program"
-                    fullWidth
+                  
                     size="small"
-                    sx={{ mt: 1 }}
+                    sx={{ mt: 1, width: "260px"}}
                     value={student.courseProgram || ""}
                     onChange={(e) => {
                       const updatedStudent = {

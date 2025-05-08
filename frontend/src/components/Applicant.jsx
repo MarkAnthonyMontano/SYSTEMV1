@@ -1,4 +1,4 @@
-import React, { useState, useEffect, } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { Button, Box, TextField, Container, Typography, FormControl, InputLabel, Select, MenuItem, ListSubheader, Modal } from "@mui/material";
 import { Link } from "react-router-dom";
@@ -11,7 +11,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { jwtDecode } from "jwt-decode";
-import { regions, provinces, cities } from 'select-philippines-address';
+import { regions, provinces, cities, barangays } from 'select-philippines-address';
 
 const API_URL = "http://localhost:5000/person_table";
 
@@ -30,7 +30,9 @@ const ApplicantForm = () => {
   const personIDFromToken = getPersonIdFromToken();
 
 
-  const [personID, setPersonID] = useState('');
+  const [personID, setPersonID] = useState(null);
+  const [formData, setFormData] = useState({ profile_picture: null, person_id: null });
+  const fileInputRef = useRef(null);
 
 
 
@@ -182,12 +184,11 @@ const ApplicantForm = () => {
 
   const [activeStep, setActiveStep] = useState(0);
   const [clickedSteps, setClickedSteps] = useState(Array(steps.length).fill(false));
-  const [sameAsPresent, setSameAsPresent] = useState(false);
-  const [uploadedImage, setUploadedImage] = useState(null);
+
   const [isLrnNA, setIsLrnNA] = useState(false);
   const [step, setStep] = useState(1);
   const [open, setOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
+
   const [preview, setPreview] = useState(null);
   const [isChecked, setIsChecked] = useState(false); // State for checkbox
   const [pwdType, setPwdType] = useState(''); // State for dropdown
@@ -216,22 +217,9 @@ const ApplicantForm = () => {
     setPreview(null);
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-    if (validTypes.includes(file.type)) {
-      setSelectedFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => setPreview(reader.result);
-      reader.readAsDataURL(file);
-    } else {
-      setSelectedFile(null);
-      setPreview(null);
-      alert('Invalid file type. Please select a JPEG or PNG file.');
-    }
-  };
+  const [uploadedImage, setUploadedImage] = useState(null);
+  const [selectedApplicantId, setSelectedApplicantId] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const handleUpload = () => {
     if (!selectedFile) {
@@ -239,17 +227,22 @@ const ApplicantForm = () => {
       return;
     }
 
-    setUploadedImage(preview); // ✅ Set image to show in outer box
+    setUploadedImage(preview); // ✅ Store preview image
     alert('Upload successful!');
     handleClose();
   };
 
 
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  const handleNextStep = () => {
-    if (step < 5) setStep(step + 1); // Change '5' to total number of steps you have
+    setSelectedFile(file);
+    setPreview(URL.createObjectURL(file));
   };
+
+
 
   // Handler for N/A checkbox
   const handleLrnCheck = (event) => {
@@ -272,31 +265,38 @@ const ApplicantForm = () => {
     fetchApplicants();
   }, []);
 
+
+  const [sameAsPresent, setSameAsPresent] = useState({});
+
   useEffect(() => {
-    if (sameAsPresent) {
-      setNewApplicant((prev) => ({
-        ...prev,
-        permanentAddress: prev.presentAddress || "",
-        barangay: prev.barangay || "",
-        zipCode: prev.zipCode || "",
-        region: prev.region || "",
-        province: prev.province || "",
-        municipality: prev.municipality || "",
-        dswdHouseholdNumber: prev.dswdHouseholdNumber || "",
-      }));
-    }
-  }, [sameAsPresent, newApplicant.presentAddress, newApplicant.barangay, newApplicant.zipCode, newApplicant.region, newApplicant.province, newApplicant.municipality, newApplicant.dswdHouseholdNumber]);
+    students.forEach((student) => {
+      const isChecked = sameAsPresent[student.person_id];
+      if (isChecked) {
+        const updatedStudent = {
+          ...student,
+          permanentRegion: student.presentRegion || "",
+          permanentProvince: student.presentProvince || "",
+          permanentMunicipality: student.presentMunicipality || "",
+          permanentBarangay: student.presentBarangay || "",
+          permanentZipCode: student.presentZipCode || "",
+        };
+        setStudents((prev) =>
+          prev.map((s) =>
+            s.person_id === student.person_id ? updatedStudent : s
+          )
+        );
+        updateItem(updatedStudent);
+      }
+    });
+  }, [sameAsPresent, students]);
 
   const [regionList, setRegionList] = useState([]);
-  const [provinceMap, setProvinceMap] = useState({});
-  const [cityMap, setCityMap] = useState({});
 
 
-  const [selectedRegion, setSelectedRegion] = useState(data[0]?.presentRegion || "");
-  const [selectedProvince, setSelectedProvince] = useState(data[0]?.presentProvince || "");
-  const [selectedCity, setSelectedCity] = useState(data[0]?.presentMunicipality || "");
 
   const [loading, setLoading] = useState(false);
+
+
 
   useEffect(() => {
     setLoading(true);
@@ -306,62 +306,13 @@ const ApplicantForm = () => {
     });
   }, []);
 
-  const handleRegionChange = async (student, regionCode) => {
-    const updatedStudent = {
-      ...student,
-      presentRegion: regionCode,
-      presentProvince: "",
-      presentMunicipality: ""
-    };
 
-    setStudents(prev =>
-      prev.map(s => (s.person_id === student.person_id ? updatedStudent : s))
-    );
-
-    setLoading(true);
-    const prov = await provinces(regionCode);
-    setProvinceMap(prev => ({ ...prev, [student.person_id]: prov }));
-    setCityMap(prev => ({ ...prev, [student.person_id]: [] }));
-    setLoading(false);
-
-    updateItem(updatedStudent);
-  };
-
-  const handleProvinceChange = async (student, provinceCode) => {
-    const updatedStudent = {
-      ...student,
-      presentProvince: provinceCode,
-      presentMunicipality: ""
-    };
-
-    setStudents(prev =>
-      prev.map(s => (s.person_id === student.person_id ? updatedStudent : s))
-    );
-
-    setLoading(true);
-    const city = await cities(provinceCode);
-    setCityMap(prev => ({ ...prev, [student.person_id]: city }));
-    setLoading(false);
-
-    updateItem(updatedStudent);
-  };
-
-  const handleCityChange = (student, cityCode) => {
-    const updatedStudent = {
-      ...student,
-      presentMunicipality: cityCode
-    };
-
-    setStudents(prev =>
-      prev.map(s => (s.person_id === student.person_id ? updatedStudent : s))
-    );
-
-    updateItem(updatedStudent);
-  };
 
   useEffect(() => {
     students.forEach((student) => {
       // --- PRESENT Address ---
+
+      // Load Provinces when Region is selected
       if (student.presentRegion && !student.presentProvinceList?.length) {
         provinces(student.presentRegion).then((provList) => {
           setStudents((prev) =>
@@ -374,6 +325,7 @@ const ApplicantForm = () => {
         });
       }
 
+      // Load Cities when Province is selected
       if (student.presentProvince && !student.presentCityList?.length) {
         cities(student.presentProvince).then((cityList) => {
           setStudents((prev) =>
@@ -386,7 +338,21 @@ const ApplicantForm = () => {
         });
       }
 
+      // ✅ Load Barangays when Municipality is selected
+      if (student.presentMunicipality && !student.presentBarangayList?.length) {
+        barangays(student.presentMunicipality).then((brgyList) => {
+          setStudents((prev) =>
+            prev.map((s) =>
+              s.person_id === student.person_id
+                ? { ...s, presentBarangayList: brgyList }
+                : s
+            )
+          );
+        });
+      }
+
       // --- PERMANENT Address ---
+
       if (student.permanentRegion && !student.permanentProvinceList?.length) {
         provinces(student.permanentRegion).then((provList) => {
           setStudents((prev) =>
@@ -410,6 +376,19 @@ const ApplicantForm = () => {
           );
         });
       }
+
+      // ✅ Load Permanent Barangays when Permanent Municipality is selected
+      if (student.permanentMunicipality && !student.permanentBarangayList?.length) {
+        barangays(student.permanentMunicipality).then((brgyList) => {
+          setStudents((prev) =>
+            prev.map((s) =>
+              s.person_id === student.person_id
+                ? { ...s, permanentBarangayList: brgyList }
+                : s
+            )
+          );
+        });
+      }
     });
   }, [students]);
 
@@ -419,8 +398,14 @@ const ApplicantForm = () => {
   return (
 
     <Container>
-      <h1 style={{ textAlign: "center", color: "maroon", marginTop: "75px" }}>APPLICANT FORM</h1>
-      <div style={{ textAlign: "Center", }}>Complete the applicant form to secure your place for the upcoming academic year at EARIST.</div>
+      <Container>
+        <h1 style={{ fontSize: "50px", fontWeight: "bold", textAlign: "center", color: "maroon", marginTop: "75px" }}>
+          APPLICANT FORM
+        </h1>
+        <div style={{ textAlign: "center" }}>
+          Complete the applicant form to secure your place for the upcoming academic year at EARIST.
+        </div>
+      </Container>
       < br />
       <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', px: 4 }}>
         {steps.map((step, index) => (
@@ -495,7 +480,8 @@ const ApplicantForm = () => {
 
 
           <Typography style={{ fontSize: "20px", color: "#6D2323", fontWeight: "bold" }}>Personal Information</Typography>
-          <hr style={{ color: "yellow" }} className="my-4 border-t border-red-300" />
+          <hr style={{ border: "1px solid #ccc", width: "100%" }} />
+          <br />
 
 
 
@@ -618,6 +604,9 @@ const ApplicantForm = () => {
           </Box>
 
 
+          <Typography style={{ fontSize: "20px", color: "#6D2323", fontWeight: "bold", }}>Course Program</Typography>
+          <hr style={{ border: "1px solid #ccc", width: "100%" }} />
+          < br />
 
           <Box display="flex" mb={2}>
             {/* Left Side: Program and Year Level Inputs */}
@@ -631,10 +620,10 @@ const ApplicantForm = () => {
                     minWidth: "150px",
                   }}
                 >
-                1st Program Choice:  <span style={{ color: "red" }}>*</span>
+                  Program  <span style={{ color: "red" }}>*</span>
                 </Typography>
                 {students.map((student) => (
-                  <FormControl sx={{ width: "75%" }} size="small" key={student.person_id}>
+                  <FormControl sx={{ width: "80%" }} size="small" key={student.person_id}>
                     <InputLabel id={`program-label-${student.person_id}`}>
                       Select Program
                     </InputLabel>
@@ -812,390 +801,11 @@ const ApplicantForm = () => {
 
               </Box>
 
-              <Box display="flex" alignItems="center" mb={2}>
-                <Typography
-                  style={{
-                    fontSize: "13px",
-                    marginRight: "10px",
-                    minWidth: "150px",
-                  }}
-                >
-               2nd Program Choice:  <span style={{ color: "red" }}>*</span>
-                </Typography>
-                {students.map((student) => (
-                  <FormControl sx={{ width: "75%" }} size="small" key={student.person_id}>
-                    <InputLabel id={`program-label-${student.person_id}`}>
-                      Select Program
-                    </InputLabel>
-                    <Select
-                      labelId={`program-label-${student.person_id}`}
-                      id={`program-select-${student.person_id}`}
-                      value={student.program2 || ""}
-                      label="Select Program"
-                      onChange={(e) => {
-                        const updatedProgram = e.target.value;
-                        const updatedStudent = { ...student, program2: updatedProgram };
-
-                        // Update local state
-                        setStudents((prevStudents) =>
-                          prevStudents.map((s) =>
-                            s.person_id === student.person_id ? updatedStudent : s
-                          )
-                        );
-
-                        // Immediately update backend
-                        updateItem(updatedStudent);
-                      }}
-                    >
-                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
-                        COLLEGE OF ARCHITECTURE AND FINE ARTS
-                      </ListSubheader>
-                      <MenuItem value="Bachelor of Science in Architecture (BS ARCHI.)">
-                        Bachelor of Science in Architecture (BS ARCHI.)
-                      </MenuItem>
-                      <MenuItem value="Bachelor of Science in Interior Design (BSID)">
-                        Bachelor of Science in Interior Design (BSID)
-                      </MenuItem>
-                      <MenuItem value="Bachelor in Fine Arts (BFA) - Painting">
-                        Bachelor in Fine Arts (BFA) - Painting
-                      </MenuItem>
-                      <MenuItem value="Bachelor in Fine Arts (BFA) - Visual Communication">
-                        Bachelor in Fine Arts (BFA) - Visual Communication
-                      </MenuItem>
-
-                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
-                        COLLEGE OF ARTS AND SCIENCES
-                      </ListSubheader>
-                      <MenuItem value="Bachelor of Science in Applied Physics w/ Comp. Sci. Emphasis (BSAP)">
-                        Bachelor of Science in Applied Physics w/ Comp. Sci. Emphasis (BSAP)
-                      </MenuItem>
-                      <MenuItem value="Bachelor of Science in Psychology (BSPSYCH)">
-                        Bachelor of Science in Psychology (BSPSYCH)
-                      </MenuItem>
-                      <MenuItem value="Bachelor of Science in Mathematics (BSMATH)">
-                        Bachelor of Science in Mathematics (BSMATH)
-                      </MenuItem>
-
-                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
-                        COLLEGE OF COMPUTING STUDIES
-                      </ListSubheader>
-                      <MenuItem value="Bachelor of Science in Computer Science (BSCS)">
-                        Bachelor of Science in Computer Science (BSCS)
-                      </MenuItem>
-                      <MenuItem value="Bachelor of Science in Information Technology (BS INFO. TECH.)">
-                        Bachelor of Science in Information Technology (BS INFO. TECH.)
-                      </MenuItem>
-
-                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
-                        COLLEGE OF BUSINESS ADMINISTRATION
-                      </ListSubheader>
-                      <MenuItem value="BSBA - Marketing Management">
-                        BSBA - Marketing Management
-                      </MenuItem>
-                      <MenuItem value="BSBA - Human Resource Dev't Management (HRDM)">
-                        BSBA - Human Resource Dev't Management (HRDM)
-                      </MenuItem>
-                      <MenuItem value="Bachelor of Science in Entrepreneurship (BSEM)">
-                        Bachelor of Science in Entrepreneurship (BSEM)
-                      </MenuItem>
-                      <MenuItem value="Bachelor of Science in Office Administration (BSOA)">
-                        Bachelor of Science in Office Administration (BSOA)
-                      </MenuItem>
-
-                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
-                        COLLEGE OF EDUCATIONS
-                      </ListSubheader>
-                      <MenuItem value="Bachelor in Secondary Education - Science">
-                        Bachelor in Secondary Education - Science
-                      </MenuItem>
-                      <MenuItem value="Bachelor in Secondary Education - Mathematics">
-                        Bachelor in Secondary Education - Mathematics
-                      </MenuItem>
-                      <MenuItem value="Bachelor in Secondary Education - Filipino">
-                        Bachelor in Secondary Education - Filipino
-                      </MenuItem>
-                      <MenuItem value="Bachelor in Special Needs Education (BSNEd)">
-                        Bachelor in Special Needs Education (BSNEd)
-                      </MenuItem>
-                      <MenuItem value="BTLE - Home Economics">BTLE - Home Economics</MenuItem>
-                      <MenuItem value="BTLE - Industrial Arts">BTLE - Industrial Arts</MenuItem>
-                      <MenuItem value="Professional Education / Subjects 18 units (TCP)">
-                        Professional Education / Subjects 18 units (TCP)
-                      </MenuItem>
-
-                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
-                        COLLEGE OF ENGINEERING
-                      </ListSubheader>
-                      <MenuItem value="Bachelor of Science in Chemical Engineering (BSCHE)">
-                        Bachelor of Science in Chemical Engineering (BSCHE)
-                      </MenuItem>
-                      <MenuItem value="Bachelor of Science in Civil Engineering (BSCE)">
-                        Bachelor of Science in Civil Engineering (BSCE)
-                      </MenuItem>
-                      <MenuItem value="Bachelor of Science in Electrical Engineering (BSEE)">
-                        Bachelor of Science in Electrical Engineering (BSEE)
-                      </MenuItem>
-                      <MenuItem value="Bachelor of Science in Electronics and Communication Eng (BSECE)">
-                        Bachelor of Science in Electronics and Communication Eng (BSECE)
-                      </MenuItem>
-                      <MenuItem value="Bachelor of Science in Mechanical Engineering (BSME)">
-                        Bachelor of Science in Mechanical Engineering (BSME)
-                      </MenuItem>
-                      <MenuItem value="Bachelor of Science in Computer Engineering (BSCOE)">
-                        Bachelor of Science in Computer Engineering (BSCOE)
-                      </MenuItem>
-
-                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
-                        COLLEGE OF HOSPITALITY MANAGEMENT (CHTM)
-                      </ListSubheader>
-                      <MenuItem value="Bachelor of Science in Tourism Management (BST)">
-                        Bachelor of Science in Tourism Management (BST)
-                      </MenuItem>
-                      <MenuItem value="Bachelor of Science in Hospitality Management (BSHM)">
-                        Bachelor of Science in Hospitality Management (BSHM)
-                      </MenuItem>
-
-                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
-                        COLLEGE OF INDUSTRIAL TECHNOLOGY
-                      </ListSubheader>
-                      <MenuItem value="BSIT - Automotive Technology">
-                        BSIT - Automotive Technology
-                      </MenuItem>
-                      <MenuItem value="BSIT - Electrical Technology">
-                        BSIT - Electrical Technology
-                      </MenuItem>
-                      <MenuItem value="BSIT - Electronics Technology">
-                        BSIT - Electronics Technology
-                      </MenuItem>
-                      <MenuItem value="BSIT - Food Technology">
-                        BSIT - Food Technology
-                      </MenuItem>
-                      <MenuItem value="BSIT - Fashion and Apparel Technology">
-                        BSIT - Fashion and Apparel Technology
-                      </MenuItem>
-                      <MenuItem value="BSIT - Industrial Chemistry">
-                        BSIT - Industrial Chemistry
-                      </MenuItem>
-                      <MenuItem value="BSIT - Drafting Technology">
-                        BSIT - Drafting Technology
-                      </MenuItem>
-                      <MenuItem value="BSIT - Machine Shop Technology">
-                        BSIT - Machine Shop Technology
-                      </MenuItem>
-                      <MenuItem value="BSIT - Refrigeration and Air Conditioning">
-                        BSIT - Refrigeration and Air Conditioning
-                      </MenuItem>
-
-                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
-                        COLLEGE OF PUBLIC ADMINISTRATION AND CRIMINOLOGY
-                      </ListSubheader>
-                      <MenuItem value="Bachelor in Public Administration (BPA)">
-                        Bachelor in Public Administration (BPA)
-                      </MenuItem>
-                      <MenuItem value="Bachelor of Science in Criminology (BSCRIM)">
-                        Bachelor of Science in Criminology (BSCRIM)
-                      </MenuItem>
-                    </Select>
-                  </FormControl>
-                ))}
-
-              </Box>
-              
-              <Box display="flex" alignItems="center" mb={2}>
-                <Typography
-                  style={{
-                    fontSize: "13px",
-                    marginRight: "10px",
-                    minWidth: "150px",
-                  }}
-                >
-                  3rd Program Choice: <span style={{ color: "red" }}>*</span>
-                </Typography>
-                {students.map((student) => (
-                  <FormControl sx={{ width: "75%" }} size="small" key={student.person_id}>
-                    <InputLabel id={`program-label-${student.person_id}`}>
-                      Select Program
-                    </InputLabel>
-                    <Select
-                      labelId={`program-label-${student.person_id}`}
-                      id={`program-select-${student.person_id}`}
-                      value={student.program3 || ""}
-                      label="Select Program"
-                      onChange={(e) => {
-                        const updatedProgram = e.target.value;
-                        const updatedStudent = { ...student, program3: updatedProgram };
-
-                        // Update local state
-                        setStudents((prevStudents) =>
-                          prevStudents.map((s) =>
-                            s.person_id === student.person_id ? updatedStudent : s
-                          )
-                        );
-
-                        // Immediately update backend
-                        updateItem(updatedStudent);
-                      }}
-                    >
-                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
-                        COLLEGE OF ARCHITECTURE AND FINE ARTS
-                      </ListSubheader>
-                      <MenuItem value="Bachelor of Science in Architecture (BS ARCHI.)">
-                        Bachelor of Science in Architecture (BS ARCHI.)
-                      </MenuItem>
-                      <MenuItem value="Bachelor of Science in Interior Design (BSID)">
-                        Bachelor of Science in Interior Design (BSID)
-                      </MenuItem>
-                      <MenuItem value="Bachelor in Fine Arts (BFA) - Painting">
-                        Bachelor in Fine Arts (BFA) - Painting
-                      </MenuItem>
-                      <MenuItem value="Bachelor in Fine Arts (BFA) - Visual Communication">
-                        Bachelor in Fine Arts (BFA) - Visual Communication
-                      </MenuItem>
-
-                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
-                        COLLEGE OF ARTS AND SCIENCES
-                      </ListSubheader>
-                      <MenuItem value="Bachelor of Science in Applied Physics w/ Comp. Sci. Emphasis (BSAP)">
-                        Bachelor of Science in Applied Physics w/ Comp. Sci. Emphasis (BSAP)
-                      </MenuItem>
-                      <MenuItem value="Bachelor of Science in Psychology (BSPSYCH)">
-                        Bachelor of Science in Psychology (BSPSYCH)
-                      </MenuItem>
-                      <MenuItem value="Bachelor of Science in Mathematics (BSMATH)">
-                        Bachelor of Science in Mathematics (BSMATH)
-                      </MenuItem>
-
-                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
-                        COLLEGE OF COMPUTING STUDIES
-                      </ListSubheader>
-                      <MenuItem value="Bachelor of Science in Computer Science (BSCS)">
-                        Bachelor of Science in Computer Science (BSCS)
-                      </MenuItem>
-                      <MenuItem value="Bachelor of Science in Information Technology (BS INFO. TECH.)">
-                        Bachelor of Science in Information Technology (BS INFO. TECH.)
-                      </MenuItem>
-
-                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
-                        COLLEGE OF BUSINESS ADMINISTRATION
-                      </ListSubheader>
-                      <MenuItem value="BSBA - Marketing Management">
-                        BSBA - Marketing Management
-                      </MenuItem>
-                      <MenuItem value="BSBA - Human Resource Dev't Management (HRDM)">
-                        BSBA - Human Resource Dev't Management (HRDM)
-                      </MenuItem>
-                      <MenuItem value="Bachelor of Science in Entrepreneurship (BSEM)">
-                        Bachelor of Science in Entrepreneurship (BSEM)
-                      </MenuItem>
-                      <MenuItem value="Bachelor of Science in Office Administration (BSOA)">
-                        Bachelor of Science in Office Administration (BSOA)
-                      </MenuItem>
-
-                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
-                        COLLEGE OF EDUCATIONS
-                      </ListSubheader>
-                      <MenuItem value="Bachelor in Secondary Education - Science">
-                        Bachelor in Secondary Education - Science
-                      </MenuItem>
-                      <MenuItem value="Bachelor in Secondary Education - Mathematics">
-                        Bachelor in Secondary Education - Mathematics
-                      </MenuItem>
-                      <MenuItem value="Bachelor in Secondary Education - Filipino">
-                        Bachelor in Secondary Education - Filipino
-                      </MenuItem>
-                      <MenuItem value="Bachelor in Special Needs Education (BSNEd)">
-                        Bachelor in Special Needs Education (BSNEd)
-                      </MenuItem>
-                      <MenuItem value="BTLE - Home Economics">BTLE - Home Economics</MenuItem>
-                      <MenuItem value="BTLE - Industrial Arts">BTLE - Industrial Arts</MenuItem>
-                      <MenuItem value="Professional Education / Subjects 18 units (TCP)">
-                        Professional Education / Subjects 18 units (TCP)
-                      </MenuItem>
-
-                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
-                        COLLEGE OF ENGINEERING
-                      </ListSubheader>
-                      <MenuItem value="Bachelor of Science in Chemical Engineering (BSCHE)">
-                        Bachelor of Science in Chemical Engineering (BSCHE)
-                      </MenuItem>
-                      <MenuItem value="Bachelor of Science in Civil Engineering (BSCE)">
-                        Bachelor of Science in Civil Engineering (BSCE)
-                      </MenuItem>
-                      <MenuItem value="Bachelor of Science in Electrical Engineering (BSEE)">
-                        Bachelor of Science in Electrical Engineering (BSEE)
-                      </MenuItem>
-                      <MenuItem value="Bachelor of Science in Electronics and Communication Eng (BSECE)">
-                        Bachelor of Science in Electronics and Communication Eng (BSECE)
-                      </MenuItem>
-                      <MenuItem value="Bachelor of Science in Mechanical Engineering (BSME)">
-                        Bachelor of Science in Mechanical Engineering (BSME)
-                      </MenuItem>
-                      <MenuItem value="Bachelor of Science in Computer Engineering (BSCOE)">
-                        Bachelor of Science in Computer Engineering (BSCOE)
-                      </MenuItem>
-
-                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
-                        COLLEGE OF HOSPITALITY MANAGEMENT (CHTM)
-                      </ListSubheader>
-                      <MenuItem value="Bachelor of Science in Tourism Management (BST)">
-                        Bachelor of Science in Tourism Management (BST)
-                      </MenuItem>
-                      <MenuItem value="Bachelor of Science in Hospitality Management (BSHM)">
-                        Bachelor of Science in Hospitality Management (BSHM)
-                      </MenuItem>
-
-                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
-                        COLLEGE OF INDUSTRIAL TECHNOLOGY
-                      </ListSubheader>
-                      <MenuItem value="BSIT - Automotive Technology">
-                        BSIT - Automotive Technology
-                      </MenuItem>
-                      <MenuItem value="BSIT - Electrical Technology">
-                        BSIT - Electrical Technology
-                      </MenuItem>
-                      <MenuItem value="BSIT - Electronics Technology">
-                        BSIT - Electronics Technology
-                      </MenuItem>
-                      <MenuItem value="BSIT - Food Technology">
-                        BSIT - Food Technology
-                      </MenuItem>
-                      <MenuItem value="BSIT - Fashion and Apparel Technology">
-                        BSIT - Fashion and Apparel Technology
-                      </MenuItem>
-                      <MenuItem value="BSIT - Industrial Chemistry">
-                        BSIT - Industrial Chemistry
-                      </MenuItem>
-                      <MenuItem value="BSIT - Drafting Technology">
-                        BSIT - Drafting Technology
-                      </MenuItem>
-                      <MenuItem value="BSIT - Machine Shop Technology">
-                        BSIT - Machine Shop Technology
-                      </MenuItem>
-                      <MenuItem value="BSIT - Refrigeration and Air Conditioning">
-                        BSIT - Refrigeration and Air Conditioning
-                      </MenuItem>
-
-                      <ListSubheader style={{ textAlign: "center", color: "maroon" }}>
-                        COLLEGE OF PUBLIC ADMINISTRATION AND CRIMINOLOGY
-                      </ListSubheader>
-                      <MenuItem value="Bachelor in Public Administration (BPA)">
-                        Bachelor in Public Administration (BPA)
-                      </MenuItem>
-                      <MenuItem value="Bachelor of Science in Criminology (BSCRIM)">
-                        Bachelor of Science in Criminology (BSCRIM)
-                      </MenuItem>
-                    </Select>
-                  </FormControl>
-                ))}
-
-              </Box>
-              
-              
 
 
-              
-              < br />
-              < br />
+
+
+
 
 
 
@@ -1244,7 +854,11 @@ const ApplicantForm = () => {
             {applicants.map((applicant) => (
               <div
                 key={applicant.id}
-                onClick={() => setPersonID(applicant.person_id)}
+                onClick={() => {
+                  setPersonID(applicant.person_id);
+                  setSelectedApplicantId(applicant.person_id);
+                  setOpen(false); // Open modal
+                }}
                 style={{
                   border: personID === applicant.person_id ? '2px solid blue' : '1px solid gray',
                   textAlign: 'center',
@@ -1256,11 +870,16 @@ const ApplicantForm = () => {
                   alignItems: 'center',
                   ml: 2,
                   position: 'relative',
+                  cursor: 'pointer',
                 }}
               >
-
-                {/* Display image if profile_picture exists */}
-                {applicant.profile_picture ? (
+                {uploadedImage && applicant.person_id === selectedApplicantId ? (
+                  <img
+                    src={uploadedImage}
+                    alt="Uploaded"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : applicant.profile_picture ? (
                   <img
                     src={`http://localhost:5000/uploads/${applicant.profile_picture}`}
                     alt="Profile"
@@ -2003,7 +1622,7 @@ const ApplicantForm = () => {
           {students.map((student) => (
             <Box key={student.person_id} display="flex" gap={2} mt={1}>
               {/* Present Address Street */}
-              <Box width="32%">
+              <Box width="50%">
                 <div>
                   Present Address Street: <span style={{ color: "red" }}>*</span>
                 </div>
@@ -2024,28 +1643,10 @@ const ApplicantForm = () => {
               </Box>
 
               {/* Barangay */}
-              <Box width="32%">
-                <div>
-                  Barangay: <span style={{ color: "red" }}>*</span>
-                </div>
-                <TextField
-                  label="Enter Barangay"
-                  required
-                  fullWidth
-                  size="small"
-                  value={student.presentBarangay || ""}
-                  onChange={(e) => {
-                    const updatedStudent = { ...student, presentBarangay: e.target.value };
-                    setStudents((prev) =>
-                      prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
-                    );
-                    updateItem(updatedStudent);
-                  }}
-                />
-              </Box>
+
 
               {/* ZIP Code */}
-              <Box width="33%">
+              <Box width="50%">
                 <div>
                   ZIP Code: <span style={{ color: "red" }}>*</span>
                 </div>
@@ -2070,111 +1671,176 @@ const ApplicantForm = () => {
 
           {students.map((student) => (
             <React.Fragment key={student.person_id}>
-              {/* Present Region */}
-              <Box width="100%" mt={1}>
-                <div>Region: <span style={{ color: "red" }}>*</span></div>
-                <FormControl sx={{ width: "100%" }} size="small">
-                  <InputLabel>Select Region</InputLabel>
-                  <Select
-                    id={`region-select-${student.person_id}`}
-                    value={student.presentRegion || ""}
-                    label="Select Region"
-                    onChange={(e) => {
-                      const regionCode = e.target.value;
-                      setLoading(true);
-                      provinces(regionCode).then((prov) => {
-                        const updatedStudent = {
-                          ...student,
-                          presentRegion: regionCode,
-                          presentProvince: "",
-                          presentMunicipality: "",
-                          presentProvinceList: prov,
-                          presentCityList: [],
-                        };
-                        setStudents((prev) =>
-                          prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
-                        );
-                        setLoading(false);
-                        updateItem(updatedStudent);
-                      });
-                    }}
+              {/* Present Region & Province in one row */}
+              <Box width="100%" mt={1} display="flex" gap={2}>
+                {/* Present Region */}
+                <Box width="50%">
+                  <div>Region: <span style={{ color: "red" }}>*</span></div>
+                  <FormControl sx={{ width: "100%" }} size="small">
+                    <InputLabel>Select Region</InputLabel>
+                    <Select
+                      id={`region-select-${student.person_id}`}
+                      value={student.presentRegion || ""}
+                      label="Select Region"
+                      onChange={(e) => {
+                        const regionCode = e.target.value;
+                        setLoading(true);
+                        provinces(regionCode).then((prov) => {
+                          const updatedStudent = {
+                            ...student,
+                            presentRegion: regionCode,
+                            presentProvince: "",
+                            presentMunicipality: "",
+                            presentProvinceList: prov,
+                            presentCityList: [],
+                          };
+                          setStudents((prev) =>
+                            prev.map((s) =>
+                              s.person_id === student.person_id ? updatedStudent : s
+                            )
+                          );
+                          setLoading(false);
+                          updateItem(updatedStudent);
+                        });
+                      }}
+                    >
+                      {regionList.map((region) => (
+                        <MenuItem key={region.region_code} value={region.region_code}>
+                          {region.region_name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
+
+                {/* Present Province */}
+                <Box width="50%">
+                  <div>Province: <span style={{ color: "red" }}>*</span></div>
+                  <FormControl
+                    sx={{ width: "100%" }}
+                    size="small"
+                    disabled={!student.presentProvinceList?.length}
                   >
-                    {regionList.map((region) => (
-                      <MenuItem key={region.region_code} value={region.region_code}>
-                        {region.region_name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                    <InputLabel>Select Province</InputLabel>
+                    <Select
+                      id={`province-select-${student.person_id}`}
+                      value={student.presentProvince || ""}
+                      label="Select Province"
+                      onChange={(e) => {
+                        const provinceCode = e.target.value;
+                        setLoading(true);
+                        cities(provinceCode).then((cityList) => {
+                          const updatedStudent = {
+                            ...student,
+                            presentProvince: provinceCode,
+                            presentMunicipality: "",
+                            presentCityList: cityList,
+                          };
+                          setStudents((prev) =>
+                            prev.map((s) =>
+                              s.person_id === student.person_id ? updatedStudent : s
+                            )
+                          );
+                          setLoading(false);
+                          updateItem(updatedStudent);
+                        });
+                      }}
+                    >
+                      {student.presentProvinceList?.map((province) => (
+                        <MenuItem key={province.province_code} value={province.province_code}>
+                          {province.province_name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
               </Box>
 
-              {/* Present Province */}
-              {/* Present Province */}
-              <Box width="100%" mt={1}>
-                <div>Province: <span style={{ color: "red" }}>*</span></div>
-                <FormControl sx={{ width: "100%" }} size="small" disabled={!student.presentProvinceList?.length}>
-                  <InputLabel>Select Province</InputLabel>
-                  <Select
-                    id={`province-select-${student.person_id}`}
-                    value={student.presentProvince || ""}
-                    label="Select Province"
-                    onChange={(e) => {
-                      const provinceCode = e.target.value;
-                      setLoading(true);
-                      cities(provinceCode).then((cityList) => {
-                        const updatedStudent = {
-                          ...student,
-                          presentProvince: provinceCode,
-                          presentMunicipality: "",
-                          presentCityList: cityList,
-                        };
-                        setStudents((prev) =>
-                          prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
-                        );
-                        setLoading(false);
-                        updateItem(updatedStudent);
-                      });
-                    }}
-                  >
-                    {student.presentProvinceList?.map((province) => (
-                      <MenuItem key={province.province_code} value={province.province_code}>
-                        {province.province_name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
+
 
               {/* Present Municipality */}
-              <Box width="100%" mt={1}>
-                <div>Municipality: <span style={{ color: "red" }}>*</span></div>
-                <FormControl sx={{ width: "100%" }} size="small" disabled={!student.presentCityList?.length}>
-                  <InputLabel>Select Municipality</InputLabel>
-                  <Select
-                    id={`city-select-${student.person_id}`}
-                    value={student.presentMunicipality || ""}
-                    label="Select Municipality"
-                    onChange={(e) => {
-                      const updatedStudent = {
-                        ...student,
-                        presentMunicipality: e.target.value,
-                      };
-                      setStudents((prev) =>
-                        prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
-                      );
-                      updateItem(updatedStudent);
-                    }}
+              <Box width="100%" mt={1} display="flex" gap={2}>
+                {/* Present Municipality/City */}
+                <Box width="50%">
+                  <div>Municipality/City: <span style={{ color: "red" }}>*</span></div>
+                  <FormControl
+                    sx={{ width: "100%" }}
+                    size="small"
+                    disabled={!student.presentCityList || student.presentCityList.length === 0}
                   >
-                    {student.presentCityList?.map((city) => (
-                      <MenuItem key={city.city_code} value={city.city_code}>
-                        {city.city_name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                    <InputLabel>Select Municipality</InputLabel>
+                    <Select
+                      id={`municipality-select-${student.person_id}`}
+                      value={student.presentMunicipality || ""}
+                      label="Select Municipality"
+                      onChange={(e) => {
+                        const cityCode = e.target.value;
+                        setLoading(true);
+                        barangays(cityCode).then((brgyList) => {
+                          const updatedStudent = {
+                            ...student,
+                            presentMunicipality: cityCode,
+                            presentBarangay: "",
+                            presentBarangayList: brgyList,
+                          };
+                          setStudents((prev) =>
+                            prev.map((s) =>
+                              s.person_id === student.person_id ? updatedStudent : s
+                            )
+                          );
+                          setLoading(false);
+                          updateItem(updatedStudent);
+                        });
+                      }}
+                    >
+                      {(student.presentCityList || []).map((city) => (
+                        <MenuItem key={city.city_code} value={city.city_code}>
+                          {city.city_name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
+
+                {/* Present Barangay */}
+                <Box width="50%">
+                  <div>Barangay: <span style={{ color: "red" }}>*</span></div>
+                  <FormControl
+                    sx={{ width: "100%" }}
+                    size="small"
+                    disabled={!student.presentBarangayList || student.presentBarangayList.length === 0}
+                  >
+                    <InputLabel>Select Barangay</InputLabel>
+                    <Select
+                      id={`barangay-select-${student.person_id}`}
+                      value={student.presentBarangay || ""}
+                      label="Select Barangay"
+                      onChange={(e) => {
+                        const barangayCode = e.target.value;
+                        const updatedStudent = {
+                          ...student,
+                          presentBarangay: barangayCode,
+                        };
+                        setStudents((prev) =>
+                          prev.map((s) =>
+                            s.person_id === student.person_id ? updatedStudent : s
+                          )
+                        );
+                        updateItem(updatedStudent);
+                      }}
+                    >
+                      {(student.presentBarangayList || []).map((brgy) => (
+                        <MenuItem key={brgy.brgy_code} value={brgy.brgy_code}>
+                          {brgy.brgy_name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
               </Box>
             </React.Fragment>
           ))}
+
 
 
           {/* DSWD Household Number */}
@@ -2206,18 +1872,48 @@ const ApplicantForm = () => {
           ))}
 
 
-          <br />
+
 
           {/* Same as Present Checkbox */}
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={sameAsPresent}
-                onChange={(e) => setSameAsPresent(e.target.checked)}
+          {students.map((student) => (
+            <React.Fragment key={student.person_id}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={sameAsPresent[student.person_id] || false}
+                    onChange={(e) => {
+                      const isChecked = e.target.checked;
+                      setSameAsPresent((prev) => ({
+                        ...prev,
+                        [student.person_id]: isChecked,
+                      }));
+
+                      if (isChecked) {
+                        const updatedStudent = {
+                          ...student,
+                          permanentStreet: student.presentStreet || "",
+                          permanentRegion: student.presentRegion || "",
+                          permanentProvince: student.presentProvince || "",
+                          permanentMunicipality: student.presentMunicipality || "",
+                          permanentBarangay: student.presentBarangay || "",
+                          permanentZipCode: student.presentZipCode || "",
+                        };
+                        setStudents((prev) =>
+                          prev.map((s) =>
+                            s.person_id === student.person_id ? updatedStudent : s
+                          )
+                        );
+                        updateItem(updatedStudent);
+                      }
+                    }}
+                  />
+                }
+                label="Same as Present Address"
               />
-            }
-            label="Same as Present Address"
-          />
+
+              {/* Other fields like Permanent Region, Province, etc. */}
+            </React.Fragment>
+          ))}
 
           {/* Permanent Address Title */}
           <Typography style={{ fontSize: "20px", color: "#6D2323", fontWeight: "bold" }}>
@@ -2229,7 +1925,7 @@ const ApplicantForm = () => {
           {/* Permanent Address Row Fields */}
           {students.map((student) => (
             <Box key={student.person_id} display="flex" gap={2} mt={1}>
-              <Box width="32%">
+              <Box width="50%">
                 <div>Permanent Address Street: <span style={{ color: "red" }}>*</span></div>
                 <TextField
                   label="Enter Street"
@@ -2247,25 +1943,8 @@ const ApplicantForm = () => {
                 />
               </Box>
 
-              <Box width="32%">
-                <div>Barangay: <span style={{ color: "red" }}>*</span></div>
-                <TextField
-                  label="Enter Barangay"
-                  required
-                  sx={{ width: "100%", marginRight: "20px" }}
-                  size="small"
-                  value={student.permanentBarangay || ""}
-                  onChange={(e) => {
-                    const updatedStudent = { ...student, permanentBarangay: e.target.value };
-                    setStudents((prev) =>
-                      prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
-                    );
-                    updateItem(updatedStudent);
-                  }}
-                />
-              </Box>
 
-              <Box width="33%">
+              <Box width="50%">
                 <div>ZIP Code: <span style={{ color: "red" }}>*</span></div>
                 <TextField
                   label="Enter ZIP Code"
@@ -2289,110 +1968,170 @@ const ApplicantForm = () => {
           {/* Permanent Region */}
           {students.map((student) => (
             <React.Fragment key={student.person_id}>
-              {/* Permanent Region */}
-              <Box width="100%" mt={1}>
-                <div>Permanent Region: <span style={{ color: "red" }}>*</span></div>
-                <FormControl sx={{ width: "100%" }} size="small">
-                  <InputLabel>Select Region</InputLabel>
-                  <Select
-                    id={`permanent-region-select-${student.person_id}`}
-                    value={student.permanentRegion || ""}
-                    label="Select Region"
-                    onChange={(e) => {
-                      const regionCode = e.target.value;
-                      setLoading(true);
-                      provinces(regionCode).then((prov) => {
-                        const updatedStudent = {
-                          ...student,
-                          permanentRegion: regionCode,
-                          permanentProvince: "",
-                          permanentMunicipality: "",
-                          permanentProvinceList: prov,
-                          permanentCityList: [],
-                        };
-                        setStudents((prev) =>
-                          prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
-                        );
-                        setLoading(false);
-                        updateItem(updatedStudent);
-                      });
-                    }}
-                  >
-                    {regionList.map((region) => (
-                      <MenuItem key={region.region_code} value={region.region_code}>
-                        {region.region_name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
+              {/* Permanent Region and Permanent Province - side by side */}
+              <Box display="flex" gap={2} width="100%" mt={1}>
 
-              {/* Permanent Province */}
-              <Box width="100%" mt={1}>
-                <div>Permanent Province: <span style={{ color: "red" }}>*</span></div>
-                <FormControl sx={{ width: "100%" }} size="small" disabled={!student.permanentProvinceList?.length}>
-                  <InputLabel>Select Province</InputLabel>
-                  <Select
-                    id={`permanent-province-select-${student.person_id}`}
-                    value={student.permanentProvince || ""}
-                    label="Select Province"
-                    onChange={(e) => {
-                      const provinceCode = e.target.value;
-                      setLoading(true);
-                      cities(provinceCode).then((cityList) => {
-                        const updatedStudent = {
-                          ...student,
-                          permanentProvince: provinceCode,
-                          permanentMunicipality: "",
-                          permanentCityList: cityList,
-                        };
-                        setStudents((prev) =>
-                          prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
-                        );
-                        setLoading(false);
-                        updateItem(updatedStudent);
-                      });
-                    }}
+                {/* Permanent Region */}
+                <Box width="50%">
+                  <div>Permanent Region: <span style={{ color: "red" }}>*</span></div>
+                  <FormControl sx={{ width: "100%" }} size="small">
+                    <InputLabel>Select Region</InputLabel>
+                    <Select
+                      id={`permanent-region-select-${student.person_id}`}
+                      value={student.permanentRegion || ""}
+                      label="Select Region"
+                      onChange={(e) => {
+                        const regionCode = e.target.value;
+                        setLoading(true);
+                        provinces(regionCode).then((prov) => {
+                          const updatedStudent = {
+                            ...student,
+                            permanentRegion: regionCode,
+                            permanentProvince: "",
+                            permanentMunicipality: "",
+                            permanentProvinceList: prov,
+                            permanentCityList: [],
+                          };
+                          setStudents((prev) =>
+                            prev.map((s) =>
+                              s.person_id === student.person_id ? updatedStudent : s
+                            )
+                          );
+                          setLoading(false);
+                          updateItem(updatedStudent);
+                        });
+                      }}
+                    >
+                      {regionList.map((region) => (
+                        <MenuItem key={region.region_code} value={region.region_code}>
+                          {region.region_name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
+
+                {/* Permanent Province */}
+                <Box width="50%">
+                  <div>Permanent Province: <span style={{ color: "red" }}>*</span></div>
+                  <FormControl
+                    sx={{ width: "100%" }}
+                    size="small"
+                    disabled={!student.permanentProvinceList?.length}
                   >
-                    {student.permanentProvinceList?.map((province) => (
-                      <MenuItem key={province.province_code} value={province.province_code}>
-                        {province.province_name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                    <InputLabel>Select Province</InputLabel>
+                    <Select
+                      id={`permanent-province-select-${student.person_id}`}
+                      value={student.permanentProvince || ""}
+                      label="Select Province"
+                      onChange={(e) => {
+                        const provinceCode = e.target.value;
+                        setLoading(true);
+                        cities(provinceCode).then((cityList) => {
+                          const updatedStudent = {
+                            ...student,
+                            permanentProvince: provinceCode,
+                            permanentMunicipality: "",
+                            permanentCityList: cityList,
+                          };
+                          setStudents((prev) =>
+                            prev.map((s) =>
+                              s.person_id === student.person_id ? updatedStudent : s
+                            )
+                          );
+                          setLoading(false);
+                          updateItem(updatedStudent);
+                        });
+                      }}
+                    >
+                      {student.permanentProvinceList?.map((province) => (
+                        <MenuItem
+                          key={province.province_code}
+                          value={province.province_code}
+                        >
+                          {province.province_name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
               </Box>
 
               {/* Permanent Municipality */}
-              <Box width="100%" mt={1}>
-                <div>Permanent Municipality: <span style={{ color: "red" }}>*</span></div>
-                <FormControl sx={{ width: "100%" }} size="small" disabled={!student.permanentCityList?.length}>
-                  <InputLabel>Select Municipality</InputLabel>
-                  <Select
-                    id={`permanent-city-select-${student.person_id}`}
-                    value={student.permanentMunicipality || ""}
-                    label="Select Municipality"
-                    onChange={(e) => {
-                      const updatedStudent = {
-                        ...student,
-                        permanentMunicipality: e.target.value,
-                      };
-                      setStudents((prev) =>
-                        prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
-                      );
-                      updateItem(updatedStudent);
-                    }}
+              <Box display="flex" gap={2} width="100%" mt={1}>
+                {/* Permanent Municipality */}
+                <Box width="50%">
+                  <div>Permanent Municipality: <span style={{ color: "red" }}>*</span></div>
+                  <FormControl
+                    sx={{ width: "100%" }}
+                    size="small"
+                    disabled={!student.permanentCityList?.length}
                   >
-                    {student.permanentCityList?.map((city) => (
-                      <MenuItem key={city.city_code} value={city.city_code}>
-                        {city.city_name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                    <InputLabel>Select Municipality</InputLabel>
+                    <Select
+                      id={`permanent-city-select-${student.person_id}`}
+                      value={student.permanentMunicipality || ""}
+                      label="Select Municipality"
+                      onChange={(e) => {
+                        const updatedStudent = {
+                          ...student,
+                          permanentMunicipality: e.target.value,
+                        };
+                        setStudents((prev) =>
+                          prev.map((s) => (s.person_id === student.person_id ? updatedStudent : s))
+                        );
+                        updateItem(updatedStudent);
+                      }}
+                    >
+                      {student.permanentCityList?.map((city) => (
+                        <MenuItem key={city.city_code} value={city.city_code}>
+                          {city.city_name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
+
+                {/* Barangay */}
+                <Box width="50%">
+                  <div>Barangay: <span style={{ color: "red" }}>*</span></div>
+                  <FormControl
+                    sx={{ width: "100%" }}
+                    size="small"
+                    disabled={!student.permanentBarangayList || student.permanentBarangayList.length === 0}
+                  >
+                    <InputLabel>Select Barangay</InputLabel>
+                    <Select
+                      id={`barangay-select-${student.person_id}`}
+                      value={student.permanentBarangay || ""}
+                      label="Select Barangay"
+                      onChange={(e) => {
+                        const barangayCode = e.target.value;
+                        const updatedStudent = {
+                          ...student,
+                          permanentBarangay: barangayCode,
+                        };
+                        setStudents((prev) =>
+                          prev.map((s) =>
+                            s.person_id === student.person_id ? updatedStudent : s
+                          )
+                        );
+                        updateItem(updatedStudent);
+                      }}
+                    >
+                      {(student.permanentBarangayList || []).map((brgy) => (
+                        <MenuItem key={brgy.brgy_code} value={brgy.brgy_code}>
+                          {brgy.brgy_name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
               </Box>
             </React.Fragment>
           ))}
+
+
 
 
           {students.map((student) => (
@@ -2443,7 +2182,7 @@ const ApplicantForm = () => {
                   p: 4,
                 }}
               >
-                {/* Close X Button */}
+                {/* Close Button */}
                 <Button
                   onClick={handleClose}
                   sx={{
@@ -2475,6 +2214,7 @@ const ApplicantForm = () => {
                   </Typography>
                 </Box>
 
+                {/* Preview Area */}
                 <Box
                   sx={{
                     border: '3px solid black',
@@ -2483,7 +2223,6 @@ const ApplicantForm = () => {
                     mb: 2,
                   }}
                 >
-                  {/* Preview Image - between header and guidelines */}
                   {preview && (
                     <Box sx={{ display: 'flex', justifyContent: 'center', my: 2, position: 'relative' }}>
                       <Box
@@ -2498,7 +2237,6 @@ const ApplicantForm = () => {
                           borderRadius: '4px',
                         }}
                       />
-                      {/* X Button to remove preview */}
                       <Button
                         size="small"
                         onClick={() => {
@@ -2523,6 +2261,7 @@ const ApplicantForm = () => {
                       </Button>
                     </Box>
                   )}
+
                   <Typography variant="body2" sx={{ mb: 2, fontSize: '15px' }}>
                     <strong style={{ fontSize: "15px" }}>Guidelines:</strong>
                     <Box sx={{ ml: 2, textAlign: "justify", fontFamily: "Arial", fontSize: "15px" }}>
@@ -2550,8 +2289,14 @@ const ApplicantForm = () => {
                 <input
                   type="file"
                   accept=".jpg,.jpeg,.png"
-                  onClick={(e) => (e.target.value = null)} // allow re-selecting same file
-                  onChange={handleFileChange}
+                  onClick={(e) => (e.target.value = null)}
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      setSelectedFile(file);
+                      setPreview(URL.createObjectURL(file));
+                    }
+                  }}
                   style={{
                     display: 'block',
                     width: '100%',
@@ -2567,7 +2312,26 @@ const ApplicantForm = () => {
                 <Button
                   variant="contained"
                   fullWidth
-                  onClick={handleUpload}
+                  onClick={async () => {
+                    if (!selectedFile || !selectedApplicantId) return;
+
+                    const pictureData = new FormData();
+                    pictureData.append('profile_picture', selectedFile);
+                    pictureData.append('person_id', selectedApplicantId);
+
+                    try {
+                      await axios.post('http://localhost:5000/api/upload-profile-picture', pictureData, {
+                        headers: { 'Content-Type': 'multipart/form-data' },
+                      });
+
+                      alert('Profile picture uploaded successfully!');
+                      setUploadedImage(URL.createObjectURL(selectedFile));
+                      setOpen(false); // Close modal
+                    } catch (error) {
+                      console.error(error);
+                      alert('Profile picture upload failed.');
+                    }
+                  }}
                   sx={{
                     backgroundColor: '#6D2323',
                     color: 'white',
@@ -2581,7 +2345,6 @@ const ApplicantForm = () => {
               </Box>
             </Box>
           </Modal>
-
 
 
 
