@@ -119,9 +119,11 @@ const HealthMedicalRecords = () => {
 
 
   return (
+<Box sx={{ height: 'calc(100vh - 120px)', overflowY: 'auto', paddingRight: 1, backgroundColor: 'transparent' }}>
+
     <Container maxWidth="lg">
         <Container>
-      <h1 style={{ fontSize: "50px", fontWeight:"bold",textAlign: "center", color: "maroon", marginTop: "75px" }}>
+      <h1 style={{ fontSize: "50px", fontWeight:"bold",textAlign: "center", color: "maroon", marginTop: "50px" }}>
         APPLICANT FORM
       </h1>
       <div style={{ textAlign: "center" }}>
@@ -190,16 +192,16 @@ const HealthMedicalRecords = () => {
       </Box>
       < br />
 
-      <Container maxWidth="100%" sx={{ backgroundColor: "#6D2323", color: "white", borderRadius: 2, boxShadow: 3, padding: "4px" }}>
+      <Container maxWidth="100%" sx={{ backgroundColor: "#6D2323", color: "white",  border: "2px solid black", borderRadius: 2, boxShadow: 3, padding: "4px" }}>
         <Box sx={{ width: "100%" }}>
-          <Typography style={{ fontSize: "20px", padding: "10px", fontFamily: "Arial Black" }}>Step 4: Health and Medical Records</Typography>
+          <Typography style={{ fontSize: "20px", padding: "10px",  fontFamily: "Arial Black"  }}>Step 4: Health and Medical Records</Typography>
         </Box>
       </Container>
 
 
 
 
-      <Box sx={{ backgroundColor: "#fff", p: 3, borderRadius: 2, boxShadow: 2 }}>
+      <Box sx={{ backgroundColor: "#fff", p: 3,  border: "2px solid black", borderRadius: 2, boxShadow: 2 }}>
         <style>
           {`
             .custom-radio {
@@ -249,7 +251,7 @@ const HealthMedicalRecords = () => {
             <Typography style={{ fontSize: "20px", color: "#6D2323", fontWeight: "bold", textAlign: "Left" }}>
               HEALTH AND MEDICAL RECORD:
             </Typography>
-            <hr style={{ color: "yellow" }} className="my-4 border-t border-red-300" />
+            <hr style={{ border: "1px solid #ccc", width: "100%" }} />
 
             {/* Section I */}
             {students.map((student) => (
@@ -1303,7 +1305,7 @@ const HealthMedicalRecords = () => {
       </Box>
 
     </Container>
-
+    </Box>
   );
 };
 

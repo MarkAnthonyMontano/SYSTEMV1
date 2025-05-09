@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 07, 2025 at 05:43 PM
+-- Generation Time: May 09, 2025 at 04:48 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -85,7 +85,7 @@ CREATE TABLE `person_table` (
   `gender` int(11) DEFAULT NULL,
   `pwdType` varchar(50) DEFAULT NULL,
   `pwdId` varchar(50) DEFAULT NULL,
-  `birthOfDate` date DEFAULT NULL,
+  `birthOfDate` varchar(50) DEFAULT NULL,
   `age` int(11) DEFAULT NULL,
   `birthPlace` varchar(255) DEFAULT NULL,
   `languageDialectSpoken` varchar(255) DEFAULT NULL,
@@ -184,29 +184,30 @@ CREATE TABLE `person_table` (
   `hospitalizationDetails` varchar(255) DEFAULT NULL,
   `medications` varchar(255) DEFAULT NULL,
   `hadCovid` int(11) DEFAULT NULL,
-  `covidDate` date DEFAULT NULL,
+  `covidDate` varchar(50) DEFAULT NULL,
   `vaccine1Brand` varchar(50) DEFAULT NULL,
-  `vaccine1Date` date DEFAULT NULL,
+  `vaccine1Date` varchar(50) DEFAULT NULL,
   `vaccine2Brand` varchar(50) DEFAULT NULL,
-  `vaccine2Date` date DEFAULT NULL,
+  `vaccine2Date` varchar(50) DEFAULT NULL,
   `booster1Brand` varchar(50) DEFAULT NULL,
-  `booster1Date` date DEFAULT NULL,
+  `booster1Date` varchar(50) DEFAULT NULL,
   `booster2Brand` varchar(50) DEFAULT NULL,
-  `booster2Date` date DEFAULT NULL,
+  `booster2Date` varchar(50) DEFAULT NULL,
   `chestXray` varchar(100) DEFAULT NULL,
   `cbc` varchar(100) DEFAULT NULL,
   `urinalysis` varchar(100) DEFAULT NULL,
   `otherworkups` varchar(255) DEFAULT NULL,
   `symptomsToday` int(11) DEFAULT NULL,
-  `remarks` varchar(255) DEFAULT NULL
+  `remarks` varchar(255) DEFAULT NULL,
+  `termsOfAgreement` int(10) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `person_table`
 --
 
-INSERT INTO `person_table` (`person_id`, `profile_picture`, `campus`, `academicProgram`, `classifiedAs`, `program`, `program2`, `program3`, `yearLevel`, `lastName`, `firstName`, `middleName`, `extension`, `nickname`, `height`, `weight`, `lrnNumber`, `gender`, `pwdType`, `pwdId`, `birthOfDate`, `age`, `birthPlace`, `languageDialectSpoken`, `citizenship`, `religion`, `civilStatus`, `tribeEthnicGroup`, `otherEthnicGroup`, `cellphoneNumber`, `emailAddress`, `telephoneNumber`, `facebookAccount`, `presentStreet`, `presentBarangay`, `presentZipCode`, `presentRegion`, `presentProvince`, `presentMunicipality`, `presentDswdHouseholdNumber`, `permanentStreet`, `permanentBarangay`, `permanentZipCode`, `permanentRegion`, `permanentProvince`, `permanentMunicipality`, `permanentDswdHouseholdNumber`, `solo_parent`, `father_deceased`, `father_family_name`, `father_given_name`, `father_middle_name`, `father_ext`, `father_nickname`, `father_education_level`, `father_last_school`, `father_course`, `father_year_graduated`, `father_school_address`, `father_contact`, `father_occupation`, `father_employer`, `father_income`, `father_email`, `mother_deceased`, `mother_family_name`, `mother_given_name`, `mother_middle_name`, `mother_nickname`, `mother_education_level`, `mother_last_school`, `mother_course`, `mother_year_graduated`, `mother_school_address`, `mother_contact`, `mother_occupation`, `mother_employer`, `mother_income`, `mother_email`, `guardian`, `guardian_family_name`, `guardian_given_name`, `guardian_middle_name`, `guardian_ext`, `guardian_nickname`, `guardian_address`, `guardian_contact`, `guardian_email`, `annual_income`, `schoolLevel`, `schoolLastAttended`, `schoolAddress`, `courseProgram`, `honor`, `generalAverage`, `yearGraduated`, `strand`, `cough`, `colds`, `fever`, `asthma`, `faintingSpells`, `heartDisease`, `tuberculosis`, `frequentHeadaches`, `hernia`, `chronicCough`, `headNeckInjury`, `hiv`, `highBloodPressure`, `diabetesMellitus`, `allergies`, `cancer`, `smokingCigarette`, `alcoholDrinking`, `hospitalized`, `hospitalizationDetails`, `medications`, `hadCovid`, `covidDate`, `vaccine1Brand`, `vaccine1Date`, `vaccine2Brand`, `vaccine2Date`, `booster1Brand`, `booster1Date`, `booster2Brand`, `booster2Date`, `chestXray`, `cbc`, `urinalysis`, `otherworkups`, `symptomsToday`, `remarks`) VALUES
-(262626, '5_profile_picture.jpg', 0, 'Undergraduate', 'Freshman (First Year)', 'Bachelor of Science in Information Technology (BS INFO. TECH.)', 'Bachelor of Science in Entrepreneurship (BSEM)', 'BSBA - Human Resource Dev\'t Management (HRDM)', 'First Year', 'Doe', 'John', 'Michael', 'Jr.', 'Johnny', '5\'10\"', '160 lbs', '123456789012', 0, 'Visual Impairment', 'PWD12345', '2005-05-04', 19, 'Manila, Philippines', 'Tagalog, English', 'FILIPINO', 'Born Again', 'Single', 'Agta', '', '09171234567', 'johndoe@email.com', '028123456', 'facebook.com/johndoe', '123 Mabini St.', 'Barangay Uno', '1000', '13', '1339', '133906', 'DSWD123456', '123 Rizal St.', 'Barangay Dos', '1001', '13', '1339', '133907', 'DSWD654321', 'Yes', 'No', 'Doe Sr.', 'Jonathan', 'Smith', NULL, 'Jon', 'College Graduate', 'UP Diliman', 'Engineering', '1990', 'Quezon City', '09181234567', 'Engineer', 'ABC Corp', '50000', 'jon.doe@abc.com', 'No', 'Jane', 'Mary', 'Anne', 'Janey', 'College Graduate', 'PUP', 'Business Admin', '1992', 'Sta. Mesa', '09221234567', 'Accountant', 'XYZ Corp', '45000', 'jane.doe@xyz.com', 'Uncle Ben', 'Parker', 'Ben', 'Jose', NULL, 'Benny', '789 Recto Ave', '09192233445', 'uncleben@family.com', '120000', 'Senior High', 'Rizal High School', 'Pasig City', 'STEM', 'With Honors', 89.50, 2022, 'STEM', 0, 0, 0, 0, 0, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '', '', 1, '2022-02-22', 'Pfizer', '2022-03-25', 'Pfizer', '2022-04-24', 'Moderna', '2022-07-25', 'Pfizer', '2023-01-25', 'Normal', 'Normal', 'Normal', '', 0, 'Fit to enroll');
+INSERT INTO `person_table` (`person_id`, `profile_picture`, `campus`, `academicProgram`, `classifiedAs`, `program`, `program2`, `program3`, `yearLevel`, `lastName`, `firstName`, `middleName`, `extension`, `nickname`, `height`, `weight`, `lrnNumber`, `gender`, `pwdType`, `pwdId`, `birthOfDate`, `age`, `birthPlace`, `languageDialectSpoken`, `citizenship`, `religion`, `civilStatus`, `tribeEthnicGroup`, `otherEthnicGroup`, `cellphoneNumber`, `emailAddress`, `telephoneNumber`, `facebookAccount`, `presentStreet`, `presentBarangay`, `presentZipCode`, `presentRegion`, `presentProvince`, `presentMunicipality`, `presentDswdHouseholdNumber`, `permanentStreet`, `permanentBarangay`, `permanentZipCode`, `permanentRegion`, `permanentProvince`, `permanentMunicipality`, `permanentDswdHouseholdNumber`, `solo_parent`, `father_deceased`, `father_family_name`, `father_given_name`, `father_middle_name`, `father_ext`, `father_nickname`, `father_education_level`, `father_last_school`, `father_course`, `father_year_graduated`, `father_school_address`, `father_contact`, `father_occupation`, `father_employer`, `father_income`, `father_email`, `mother_deceased`, `mother_family_name`, `mother_given_name`, `mother_middle_name`, `mother_nickname`, `mother_education_level`, `mother_last_school`, `mother_course`, `mother_year_graduated`, `mother_school_address`, `mother_contact`, `mother_occupation`, `mother_employer`, `mother_income`, `mother_email`, `guardian`, `guardian_family_name`, `guardian_given_name`, `guardian_middle_name`, `guardian_ext`, `guardian_nickname`, `guardian_address`, `guardian_contact`, `guardian_email`, `annual_income`, `schoolLevel`, `schoolLastAttended`, `schoolAddress`, `courseProgram`, `honor`, `generalAverage`, `yearGraduated`, `strand`, `cough`, `colds`, `fever`, `asthma`, `faintingSpells`, `heartDisease`, `tuberculosis`, `frequentHeadaches`, `hernia`, `chronicCough`, `headNeckInjury`, `hiv`, `highBloodPressure`, `diabetesMellitus`, `allergies`, `cancer`, `smokingCigarette`, `alcoholDrinking`, `hospitalized`, `hospitalizationDetails`, `medications`, `hadCovid`, `covidDate`, `vaccine1Brand`, `vaccine1Date`, `vaccine2Brand`, `vaccine2Date`, `booster1Brand`, `booster1Date`, `booster2Brand`, `booster2Date`, `chestXray`, `cbc`, `urinalysis`, `otherworkups`, `symptomsToday`, `remarks`, `termsOfAgreement`) VALUES
+(262626, '262626_profile_picture.jpg', 0, 'Undergraduate', 'Freshman (First Year)', 'Bachelor of Science in Information Technology (BS INFO. TECH.)', 'Bachelor of Science in Computer Science (BSCS)', 'Bachelor of Science in Computer Engineering (BSCOE)', 'Third Year', 'Doeeee', 'John', 'Michael', 'V', 'Johnny', '5\'11', '65kg', '123456789012', 0, 'Visual Impairment', 'PWD12345', '2003-06-20', 21, 'Manila, Philippines', 'Tagalog, English', 'FILIPINO', 'Born Again', 'Single', 'Agta', 'Wala', '09171234567', 'johndoe@email.com', '028123456', 'facebook.com/johndoe', '123 Mabini St.', '137404053', '1000', '13', '1374', '137404', 'DSWD123456', '123 Mabini St.', '137404053', '1000', '13', '1374', '137404', 'DSWD654321', 'Yes', 'No', 'Doe Sr.', 'Jonathan', 'Smiths', 'III', 'Jon', 'College Graduate', 'UP Diliman', 'Engineering', '1990', 'Quezon City', '09181234567', 'Engineer', 'ABC Corp', '50000', 'jon.doe@abc.com', 'No', 'Jane', 'Mary', 'Anne', 'Janey', 'College Graduate', 'PUP', 'Business Admin', '1992', 'Sta. Mesa', '09221234567', 'Accountant', 'XYZ Corp', '45000', 'jane.doe@xyz.com', 'Father', 'Parker', 'Ben', 'Jose', NULL, 'Benny', '789 Recto Ave', '09192233445', 'uncleben@family.com', '80,000 and below', 'Senior High School', 'Rizal High School', 'Pasig City', 'STEM', 'With Honors', 92.50, 2022, 'Information and Communications Technology (ICT)', 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Wala ngani', 'Vitamins C', 1, '2022-02-11', 'Pfizer', '2022-03-14', 'Pfizer', '2022-04-13', 'Moderna', '2022-07-14', 'Pfizer', '2023-01-14', 'Normal', 'Normal', 'Normal', 'Normal', 1, 'Fit to enroll', 1);
 
 -- --------------------------------------------------------
 

@@ -396,10 +396,12 @@ const ApplicantForm = () => {
 
 
   return (
+<Box sx={{ height: 'calc(100vh - 120px)', overflowY: 'auto', paddingRight: 1, backgroundColor: 'transparent' }}>
 
     <Container>
+      
       <Container>
-        <h1 style={{ fontSize: "50px", fontWeight: "bold", textAlign: "center", color: "maroon", marginTop: "75px" }}>
+        <h1 style={{ fontSize: "50px", fontWeight: "bold", textAlign: "center", color: "maroon", marginTop: "25px" }}>
           APPLICANT FORM
         </h1>
         <div style={{ textAlign: "center" }}>
@@ -471,12 +473,17 @@ const ApplicantForm = () => {
 
       < br />
       <form>
-        <Container maxWidth="100%" sx={{ backgroundColor: "#6D2323", color: "white", borderRadius: 2, boxShadow: 3, padding: "4px", }}>
+ 
+        <Container maxWidth="100%" sx={{ backgroundColor: "#6D2323", border: "2px solid black",  maxHeight: '500px',
+      overflowY: 'auto', color: "white", borderRadius: 2, boxShadow: 3, padding: "4px", }}>
+       
           <Box sx={{ width: "100%", }}>
             <Typography style={{ fontSize: "20px", padding: "10px", fontFamily: "Arial Black" }}>Step 1: Personal Information</Typography>
           </Box>
         </Container>
-        <Container maxWidth="100%" sx={{ backgroundColor: "white", padding: 4, borderRadius: 2, boxShadow: 3 }}>
+
+       
+        <Container maxWidth="100%" sx={{ backgroundColor: "white", border: "2px solid black", padding: 4, borderRadius: 2, boxShadow: 3 }}>
 
 
           <Typography style={{ fontSize: "20px", color: "#6D2323", fontWeight: "bold" }}>Personal Information</Typography>
@@ -604,9 +611,6 @@ const ApplicantForm = () => {
           </Box>
 
 
-          <Typography style={{ fontSize: "20px", color: "#6D2323", fontWeight: "bold", }}>Course Program</Typography>
-          <hr style={{ border: "1px solid #ccc", width: "100%" }} />
-          < br />
 
           <Box display="flex" mb={2}>
             {/* Left Side: Program and Year Level Inputs */}
@@ -801,13 +805,9 @@ const ApplicantForm = () => {
 
               </Box>
 
-
-
-
-
-
-
-
+              < br />
+              < br />
+              < br />
 
               {/* Year Level Dropdown */}
               <Box display="flex" alignItems="center" mb={2}>
@@ -915,13 +915,13 @@ const ApplicantForm = () => {
                 <Box
                   key={student.person_id}
                   display="flex"
-                  gap={2}
+                
                   flexWrap="wrap"
                   mb={2}
                   width="100%"
                 >
                   {/* Last Name */}
-                  <Box width="19%">
+                  <Box width="20%">
                     <TextField
                       label="Enter Last Name"
                       required
@@ -942,7 +942,7 @@ const ApplicantForm = () => {
                   </Box>
 
                   {/* First Name */}
-                  <Box width="19%">
+                  <Box width="20%">
                     <TextField
                       label="Enter First Name"
                       required
@@ -963,7 +963,7 @@ const ApplicantForm = () => {
                   </Box>
 
                   {/* Middle Name */}
-                  <Box width="19%">
+                  <Box width="20%">
                     <TextField
                       label="Enter Middle Name"
                       required
@@ -984,7 +984,7 @@ const ApplicantForm = () => {
                   </Box>
 
                   {/* Extension */}
-                  <Box width="10%">
+                  <Box width="20%">
                     <FormControl sx={{ width: "85%" }} size="small">
                       <InputLabel id={`extension-label-${student.person_id}`}>EXT.</InputLabel>
                       <Select
@@ -1016,7 +1016,7 @@ const ApplicantForm = () => {
                   </Box>
 
                   {/* Nickname */}
-                  <Box width="19%">
+                  <Box width="20%">
                     <TextField
                       label="Enter Nickname"
                       sx={{ width: "85%" }}
@@ -1510,8 +1510,6 @@ const ApplicantForm = () => {
             ))}
 
           </Box>
-
-          <br />
 
           <Typography style={{ fontSize: "20px", color: "#6D2323", fontWeight: "bold" }}>
             Contact Information:
@@ -2412,12 +2410,14 @@ const ApplicantForm = () => {
             </Button>
           </Box>
         </Container>
+     
       </form>
 
 
 
 
     </Container>
+    </Box>
   );
 };
 

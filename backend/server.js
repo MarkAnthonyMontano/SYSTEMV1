@@ -314,7 +314,7 @@ app.post("/person_table", async (req, res) => {
     hernia, chronicCough, headNeckInjury, hiv, highBloodPressure, diabetesMellitus, allergies, cancer,
     smoking, alcoholDrinking, hospitalized, hospitalizationDetails, medications, hadCovid, covidDate,
     vaccine1Brand, vaccine1Date, vaccine2Brand, vaccine2Date, booster1Brand, booster1Date, booster2Brand,
-    booster2Date, chestXray, cbc, urinalysis, otherworkups, symptomsToday, remarks
+    booster2Date, chestXray, cbc, urinalysis, otherworkups, symptomsToday, remarks, termsOfAgreement
   } = req.body;
 
   const query = `
@@ -343,8 +343,8 @@ app.post("/person_table", async (req, res) => {
       hernia, chronicCough, headNeckInjury, hiv, highBloodPressure, diabetesMellitus, allergies, cancer,
       smoking, alcoholDrinking, hospitalized, hospitalizationDetails, medications, hadCovid, covidDate,
       vaccine1Brand, vaccine1Date, vaccine2Brand, vaccine2Date, booster1Brand, booster1Date, booster2Brand,
-      booster2Date, chestXray, cbc, urinalysis, otherworkups, symptomsToday, remarks
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      booster2Date, chestXray, cbc, urinalysis, otherworkups, symptomsToday, remarks, termsOfAgreement
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   try {
@@ -373,7 +373,7 @@ app.post("/person_table", async (req, res) => {
       hernia, chronicCough, headNeckInjury, hiv, highBloodPressure, diabetesMellitus, allergies, cancer,
       smoking, alcoholDrinking, hospitalized, hospitalizationDetails, medications, hadCovid, covidDate,
       vaccine1Brand, vaccine1Date, vaccine2Brand, vaccine2Date, booster1Brand, booster1Date, booster2Brand,
-      booster2Date, chestXray, cbc, urinalysis, otherworkups, symptomsToday, remarks
+      booster2Date, chestXray, cbc, urinalysis, otherworkups, symptomsToday, remarks,	termsOfAgreement
     ]);
 
     res.status(201).send({ message: "Personal information created", person_id: result.insertId });
@@ -412,7 +412,7 @@ app.put("/person_table/:person_id", (req, res) => {
     hernia, chronicCough, headNeckInjury, hiv, highBloodPressure, diabetesMellitus, allergies, cancer,
     smokingCigarette, alcoholDrinking, hospitalized, hospitalizationDetails, medications, hadCovid, covidDate,
     vaccine1Brand, vaccine1Date, vaccine2Brand, vaccine2Date, booster1Brand, booster1Date, booster2Brand,
-    booster2Date, chestXray, cbc, urinalysis, otherworkups, symptomsToday, remarks
+    booster2Date, chestXray, cbc, urinalysis, otherworkups, symptomsToday, remarks, termsOfAgreement
   } = req.body;
 
   const updateQuery = `
@@ -444,7 +444,7 @@ app.put("/person_table/:person_id", (req, res) => {
       hospitalizationDetails = ?, medications = ?, hadCovid = ?, covidDate = ?, vaccine1Brand = ?,
       vaccine1Date = ?, vaccine2Brand = ?, vaccine2Date = ?, booster1Brand = ?, booster1Date = ?,
       booster2Brand = ?, booster2Date = ?, chestXray = ?, cbc = ?, urinalysis = ?, otherworkups = ?,
-      symptomsToday = ?, remarks = ?
+      symptomsToday = ?, remarks = ?, termsOfAgreement = ?
     WHERE person_id = ?
   `;
 
@@ -473,7 +473,7 @@ app.put("/person_table/:person_id", (req, res) => {
     hernia, chronicCough, headNeckInjury, hiv, highBloodPressure, diabetesMellitus, allergies, cancer,
     smokingCigarette, alcoholDrinking, hospitalized, hospitalizationDetails, medications, hadCovid, covidDate,
     vaccine1Brand, vaccine1Date, vaccine2Brand, vaccine2Date, booster1Brand, booster1Date, booster2Brand,
-    booster2Date, chestXray, cbc, urinalysis, otherworkups, symptomsToday, remarks,
+    booster2Date, chestXray, cbc, urinalysis, otherworkups, symptomsToday, remarks, termsOfAgreement,
     person_id
   ];
 
